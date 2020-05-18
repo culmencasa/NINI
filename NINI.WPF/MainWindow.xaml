@@ -1,0 +1,55 @@
+﻿<Window
+    x:Class="NINI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:NINI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tb="http://www.hardcodet.net/taskbar"
+    Title="MainWindow"
+    Width="800"
+    Height="450"
+    mc:Ignorable="d">
+    <Grid>
+
+        <Button
+            Width="300"
+            Height="100"
+            Content="OK" />
+    </Grid>
+    <!--<tb:TaskbarIcon
+    DataContext="{Binding Main, Source={StaticResource Locator}}"
+        x:Name="MyNotifyIcon"
+        IconSource="/Icons/Jazz.ico"
+        MenuActivation="LeftOrRightClick"
+        PopupActivation="DoubleClick"
+        ToolTipText="{Binding ToolTipText}"
+        Visibility="Visible">
+
+        <tb:TaskbarIcon.ContextMenu>
+            <ContextMenu>
+                <MenuItem Command="{Binding SyncTimeCommand}" Header="同步时间(_S)">
+                    <MenuItem.Icon>
+                        <Image
+                            Width="16"
+                            Height="16"
+                            Source="/Icons/tool_timer.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+
+                <Separator />
+
+                <MenuItem Command="{Binding ExitCommand}" Header="退出(_X)">
+                    <MenuItem.Icon>
+                        <Image
+                            Width="16"
+                            Height="16"
+                            Source="/Icons/aim_offline.ico" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </ContextMenu>
+        </tb:TaskbarIcon.ContextMenu>
+    </tb:TaskbarIcon>-->
+
+</Window>
+

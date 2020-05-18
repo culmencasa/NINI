@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="RemoteTOD.cs" />
+    <Compile Remove="RunAsService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\Jazz.ico" />
+    <None Remove="Images\aim_offline.ico" />
+    <None Remove="Images\tool_timer.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="5.2.0" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf.NetCore" Version="1.0.10" />
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MVVMLib\MVVMLib.csproj" />
+    <ProjectReference Include="..\Utils.Misc\Utils.Misc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\Jazz.ico" />
+    <Resource Include="Icons\aim_offline.ico" />
+    <Resource Include="Icons\tool_timer.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Images\" />
+  </ItemGroup>
+
+</Project>
