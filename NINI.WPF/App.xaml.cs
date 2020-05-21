@@ -81,7 +81,7 @@ namespace NINI
             notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
             locator = (ViewModelLocator)FindResource("Locator");
             locator.Main.SyncTimeCommand.Execute(null);
-            notifyIcon.ShowBalloonTip("时间已同步", DateTime.Now.ToString(), BalloonIcon.Info);
+            notifyIcon.ShowBalloonTip("Time Synced.", DateTime.Now.ToString(), BalloonIcon.Info);
 
         }
 
@@ -109,7 +109,6 @@ namespace NINI
                 }
                 catch (Win32Exception)
                 {
-                    MessageBox.Show("NINI", "需要以管理员身份进行安装");
                 }
                 Process.GetCurrentProcess().Kill();
             }

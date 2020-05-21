@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TaskScheduler" Version="2.8.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\icons8-herb-48.png" />
+    <Resource Include="Resources\icons8-spider-web-48.png" />
+  </ItemGroup>
+
+</Project>

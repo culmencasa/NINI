@@ -5,6 +5,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Authors />
+    <Product />
+    <Company />
   </PropertyGroup>
 
   <ItemGroup>
