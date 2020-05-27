@@ -4,39 +4,15 @@ using System.Runtime.CompilerServices;
 
 namespace MVVMLib
 {
-    /// <summary>
-    /// A basic implementation of <see cref="IMessenger"/> with the following characteristics:
-    /// <list type="bullet">
-    ///     <item>
-    ///         <description>
-    ///             Delivers messages synchronously.
-    ///         </description>
-    ///     </item>
-    ///     <item>
-    ///         <description>
-    ///             The subscribers are kept as weak references, which allows them to be garbage collected
-    ///             even without an explicit <see cref="Unsubscribe(object)"/> call.
-    ///         </description>
-    ///     </item>
-    ///     <item>
-    ///         <description>
-    ///             Provides a convenient static instance of itself via the <see cref="Default"/> property.
-    ///         </description>
-    ///     </item>
-    ///     <item>
-    ///         <description>
-    ///             All public methods are thread-safe.
-    ///         </description>
-    ///     </item>
-    /// </list>
-    /// </summary>
+
+
+    // Ref to https://github.com/yariker/MvvmMicro
+
+
     public class SimpleMessenger : IMessenger
     {
         private readonly Dictionary<Type, Channel> _registry = new Dictionary<Type, Channel>();
 
-        /// <summary>
-        /// Gets the default instance of the <see cref="SimpleMessenger" />.
-        /// </summary>
         public static IMessenger Default { get; } = new SimpleMessenger();
 
 
@@ -64,8 +40,7 @@ namespace MVVMLib
                         action(message);
                         break;
                     default:
-                        // TODO: Optimize this.
-                        callback.DynamicInvoke(message);
+                        //callback.DynamicInvoke(message);
                         break;
                 }
             }

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using MVVMLib;
+using NINI.Models;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -25,7 +28,38 @@ namespace NINI
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Hide();
+            SimpleMessenger.Default.Subscribe<MainViewMessage>(this, HandleSimpleCommand);
         }
 
+        private void HandleSimpleCommand(MainViewMessage msg)
+        {
+            switch (msg.Signal)
+            {
+                case MainViewMessage.Signals.OpenWindow:
+                    {
+                        this.Show();
+                        if (this.Visibility != Visibility.Visible)
+                            this.Visibility = Visibility.Visible;
+
+                        if (this.WindowState == WindowState.Minimized)
+                            this.WindowState = WindowState.Normal;
+
+                        if (!this.IsActive)
+                            this.Activate();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
+            base.OnClosing(e);
+        }
     }
 }

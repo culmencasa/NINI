@@ -1,4 +1,5 @@
 ﻿using MVVMLib;
+using NINI.Models;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -20,21 +21,70 @@ namespace NINI.ViewModels
 
             SyncTimeCommand = new RelayCommand(SyncTimeCommandAction);
             ExitCommand = new RelayCommand(ExitCommandAction);
+            DoubleClickCommand = new RelayCommand(DoubleClickAcion);
+
+            SimpleMessenger.Default.Subscribe<MainViewMessage>(this, HandleMainViewMessage);
         }
+
+
+        #region Actions for Commands, Messages
 
         private void SyncTimeCommandAction()
         {
-            //var remoteTime = RemoteTOD.GetNow("time.windows.com", true);
+            bool synced = false;
 
-            var dt = SyncTime.GetBJTime();
+            try
+            {
+                var dt = SyncTime.GetBJTime();
 
-            SyncTime.SetSystemTime(dt);
+                synced = SyncTime.SetSystemTime(dt);
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+                if (synced)
+                {
+                    SimpleMessenger.Default.Publish(new GeneralMessage()
+                    {
+                        Signal = GeneralMessage.Types.ShowBallon,
+                        Title = "Time Synced.",
+                        Content = DateTime.Now.ToString()
+                    });
+                }
+            }
         }
 
         private void ExitCommandAction()
         {
             Application.Current.Shutdown();
         }
+
+        private void DoubleClickAcion()
+        {
+            SimpleMessenger.Default.Publish(new MainViewMessage()
+            {
+                Signal = MainViewMessage.Signals.OpenWindow,
+                Parameter = null
+            });
+        }
+
+        #endregion
+
+        private void HandleMainViewMessage(MainViewMessage msg)
+        {
+            switch (msg.Signal)
+            {
+                case MainViewMessage.Signals.SyncTime:
+                    SyncTimeCommandAction();
+                    break;
+                default:
+                    break;
+            }
+        }
+
 
         private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         { 
@@ -48,11 +98,20 @@ namespace NINI.ViewModels
                 }
                 else
                 {
-                    ToolTipText = "网络连接已断开";
+                    ToolTipText = "Network Connection Lost.";
                 }
         }
 
+
+        #region Fields
+
         private string _toolTipText;
+
+
+        #endregion
+
+        #region ViewProperties
+
         public string ToolTipText
         {
             get
@@ -65,10 +124,17 @@ namespace NINI.ViewModels
             }
         }
 
+        #endregion
 
+        #region Commands
 
         public ICommand SyncTimeCommand { get; set; }
         public ICommand ExitCommand { get; set; }
+        public ICommand DoubleClickCommand { get; private set; }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// 获取IP地址
@@ -85,5 +151,6 @@ namespace NINI.ViewModels
             }
         }
 
+        #endregion
     }
 }

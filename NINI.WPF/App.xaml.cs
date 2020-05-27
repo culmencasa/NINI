@@ -1,4 +1,6 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
+using MVVMLib;
+using NINI.Models;
 using NINI.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -23,7 +25,6 @@ namespace NINI
 
         public App()
         {
-
             Exit += App_Exit;
         }
 
@@ -46,6 +47,7 @@ namespace NINI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+
             base.OnStartup(e);
 
             #region 唯一实例判断
@@ -80,8 +82,16 @@ namespace NINI
 
             notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
             locator = (ViewModelLocator)FindResource("Locator");
-            locator.Main.SyncTimeCommand.Execute(null);
-            notifyIcon.ShowBalloonTip("Time Synced.", DateTime.Now.ToString(), BalloonIcon.Info);
+
+            // subscribe message
+            SimpleMessenger.Default.Subscribe<GeneralMessage>(this, HandleGeneralMessage);
+            // sync time at startup
+            SimpleMessenger.Default.Publish(new MainViewMessage()
+            {
+                Signal = MainViewMessage.Signals.SyncTime
+            });
+
+
 
         }
 
@@ -89,6 +99,18 @@ namespace NINI
         {
             notifyIcon?.Dispose();
             base.OnExit(e);
+        }
+
+        private void HandleGeneralMessage(GeneralMessage msg)
+        {
+            switch (msg.Signal)
+            {
+                case GeneralMessage.Types.ShowBallon:
+                    notifyIcon?.ShowBalloonTip(msg.Title, msg.Content, BalloonIcon.Info);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static void RunThisAsAdmin()

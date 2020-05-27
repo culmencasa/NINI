@@ -5,7 +5,7 @@
     xmlns:local="clr-namespace:NINI"
     xmlns:viewmodels="clr-namespace:NINI.ViewModels"
     ShutdownMode="OnExplicitShutdown"
-    >
+    StartupUri="MainWindow.xaml">
     <Application.Resources>
 
         <ResourceDictionary>
