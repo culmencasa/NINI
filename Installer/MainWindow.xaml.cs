@@ -20,6 +20,13 @@ namespace Installer
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            // check integrity
+            if (!File.Exists("NINI.exe"))
+            {
+                MessageBox.Show("NINI.exe File not found.");
+                return;
+            }
+
             string folderName = "NINI";
             string installPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), folderName);
             string fileName = "NINI.exe";

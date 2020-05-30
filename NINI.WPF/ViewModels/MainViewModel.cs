@@ -142,13 +142,24 @@ namespace NINI.ViewModels
         /// <returns></returns>
         public static string GetIPString()
         {
-            using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+            string ipString = "";
+            try
             {
-                socket.Connect("8.8.8.8", 65530);
-                IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                {
+                    socket.Connect("8.8.8.8", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
 
-                return endPoint.Address.ToString();
+                    ipString = endPoint.Address.ToString();
+                }
             }
+            catch (Exception ex)
+            {
+                ipString = "No IP Address";
+                EZLogger.Default.Error(ex.StackTrace);
+            }
+
+            return ipString;
         }
 
         #endregion

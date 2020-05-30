@@ -23,10 +23,10 @@ namespace Installer
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // kill process of tray program
+            // 1.kill process of tray program
             KillProcesses("NINI");
 
-            // delete a scheduler task
+            // 2.delete a scheduler task
             string taskName = "NINITray";
             using (TaskService ts = new TaskService())
             {
@@ -37,8 +37,21 @@ namespace Installer
                 }
             }
 
-            // delete files
-            foreach (string file in Directory.GetFiles("."))
+            // 3.get user install path
+            string installPath = AppDomain.CurrentDomain.BaseDirectory;
+            try
+            {
+                string regPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\NINI").GetValue("Path").ToString();
+                if (!string.IsNullOrEmpty(regPath))
+                {
+                    installPath = regPath;
+                }
+            }
+            catch { }
+
+
+            // 4.delete files
+            foreach (string file in Directory.GetFiles(installPath))
             {
                 if (file.Contains("Installer.dll") || file.Contains("Installer.exe"))
                     continue;
@@ -53,12 +66,14 @@ namespace Installer
                 }
             }
 
-            // delete registry
+            // 5.delete registry
             Registry.LocalMachine.OpenSubKey("SOFTWARE", true).DeleteSubKey("NINI");
             MessageBox.Show("Uninstall completed.");
 
-            // afterwards
-            DeleteItselfByCMD();
+            // 6.afterwards, clean dir
+            DeleteItselfByCMD(installPath);
+
+            // 7.quit
             Application.Current.Shutdown();
         }
 
@@ -74,18 +89,8 @@ namespace Installer
         }
 
 
-        private void DeleteItselfByCMD()
+        private void DeleteItselfByCMD(string installPath)
         {
-            string installPath = AppDomain.CurrentDomain.BaseDirectory;
-            try
-            {
-                string regPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\NINI").GetValue("Path").ToString();
-                if (!string.IsNullOrEmpty(regPath))
-                {
-                    installPath = regPath;
-                }
-            }
-            catch { }
 
             string[] remnants = new string[] {
                 System.IO.Path.Combine(installPath, "Installer.exe"),
