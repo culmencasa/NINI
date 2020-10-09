@@ -1,0 +1,39 @@
+﻿<hc:BlurWindow  x:Class="NINI.RunWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NINI"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        Style="{StaticResource WindowBlur}"
+        DataContext="{Binding RunVM, Source={StaticResource Locator}}"
+        mc:Ignorable="d"
+                WindowStartupLocation="CenterScreen"
+                Background="{DynamicResource MainContentBackgroundBrush}"
+        Title="RunWindow" Height="450" Width="800">
+    <Border Background="{DynamicResource MainContentForegroundDrawingBrush}">
+        <Grid>
+        <ListView ItemsSource="{Binding Datas}">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <hc:Gravatar Style="{StaticResource GravatarCircleImg}" Source="{Binding IconStream}" />
+                    </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+            <StackPanel VerticalAlignment="Center">
+                <Button Content="TestDB" Command="{Binding AddCommand}" />
+                <Button Content="Load" Command="{Binding LoadCommand}" />
+
+            </StackPanel>
+
+        </Grid>
+    </Border>
+
+</hc:BlurWindow>

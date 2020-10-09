@@ -30,6 +30,7 @@ namespace NINI.ViewModels
 
             //containerBuilder.RegisterInstance(SimpleMessenger.Default).As<IMessenger>();
             containerBuilder.RegisterType<MainViewModel>().AsSelf().SingleInstance();
+            containerBuilder.RegisterType<RunViewModel>().AsSelf().SingleInstance();
 
             _container = containerBuilder.Build();
         }
@@ -39,6 +40,14 @@ namespace NINI.ViewModels
             get
             {
                 return _container.Resolve<MainViewModel>();
+            }
+        }
+
+        public RunViewModel RunVM
+        {
+            get
+            {
+                return _container.Resolve<RunViewModel>();
             }
         }
 

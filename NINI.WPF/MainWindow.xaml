@@ -10,13 +10,20 @@
     Width="800"
     Height="450"
     WindowStartupLocation="CenterScreen"
+    AllowDrop="True"
+    Drop="Window_Drop"
+    DragOver="Window_DragOver"
     mc:Ignorable="d">
     <Grid>
-
-        <Button
-            Width="300"
-            Height="100"
-            Content="OK" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="afasfasfasfasdf" />
+        
+        <Button Grid.Column="2" Content="OK" Click="Button_Click" Background="Red">            
+        </Button>
     </Grid>
     <!--<tb:TaskbarIcon
     DataContext="{Binding Main, Source={StaticResource Locator}}"
