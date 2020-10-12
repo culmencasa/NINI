@@ -31,36 +31,33 @@ namespace NINI
             InitializeComponent();
 
             this.Hide();
-            SimpleMessenger.Default.Subscribe<MainViewMessage>(this, HandleSimpleCommand);
+
+            this.Loaded += MainWindow_Loaded;
+            this.Closed += MainWindow_Closed;
         }
 
-        private void HandleSimpleCommand(MainViewMessage msg)
+        public bool IsClosed { get; set; }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            switch (msg.Signal)
+        }
+
+        private void MainWindow_Closed(object sender, EventArgs e)
+        {
+            if (IsClosed)
             {
-                case MainViewMessage.Signals.OpenWindow:
-                    {
-                        this.Show();
-                        if (this.Visibility != Visibility.Visible)
-                            this.Visibility = Visibility.Visible;
-
-                        if (this.WindowState == WindowState.Minimized)
-                            this.WindowState = WindowState.Normal;
-
-                        if (!this.IsActive)
-                            this.Activate();
-                    }
-                    break;
-                default:
-                    break;
             }
         }
 
+
         protected override void OnClosing(CancelEventArgs e)
         {
-            e.Cancel = true;
-            this.Hide();
             base.OnClosing(e);
+
+            if (!e.Cancel)
+            {
+                IsClosed = true;
+            }
         }
 
         private void Window_Drop(object sender, DragEventArgs e)
@@ -118,11 +115,11 @@ namespace NINI
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            RunWindow runWindow = new RunWindow();
-            runWindow.Show();
+            //RunWindow runWindow = new RunWindow();
+            //runWindow.Show();
 
-            Button btn = sender as Button;
-            btn.Background = Brushes.Green;
+            //Button btn = sender as Button;
+            //btn.Background = Brushes.Green;
             //btn.IsEnabled = false;
         }
     }

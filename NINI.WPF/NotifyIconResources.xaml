@@ -1,4 +1,5 @@
 ﻿<ResourceDictionary
+    x:Class="NINI.NotifyIconResources"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:NINI"
@@ -7,6 +8,7 @@
 
     <tb:TaskbarIcon
         x:Key="MyNotifyIcon"
+        TrayLeftMouseDown="TrayLeftMouseDownHandler"
         DoubleClickCommand="{Binding DoubleClickCommand}"
         IconSource="/Icons/Jazz.ico"
         MenuActivation="RightClick"
@@ -14,7 +16,7 @@
         ToolTipText="{Binding ToolTipText}"
         Visibility="Visible">
         <tb:TaskbarIcon.DataContext>
-            <vm:MainViewModel />
+            <vm:NotifyIconViewModel />
         </tb:TaskbarIcon.DataContext>
         <tb:TaskbarIcon.ContextMenu>
             <ContextMenu>

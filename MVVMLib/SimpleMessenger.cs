@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace MVVMLib
@@ -14,7 +15,6 @@ namespace MVVMLib
         private readonly Dictionary<Type, Channel> _registry = new Dictionary<Type, Channel>();
 
         public static IMessenger Default { get; } = new SimpleMessenger();
-
 
         public void Publish<T>(T message)
         {
@@ -33,7 +33,7 @@ namespace MVVMLib
             }
 
             foreach (Delegate callback in callbacks)
-            {
+            { 
                 switch (callback)
                 {
                     case Action<T> action:

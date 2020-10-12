@@ -25,39 +25,5 @@
         <Button Grid.Column="2" Content="OK" Click="Button_Click" Background="Red">            
         </Button>
     </Grid>
-    <!--<tb:TaskbarIcon
-    DataContext="{Binding Main, Source={StaticResource Locator}}"
-        x:Name="MyNotifyIcon"
-        IconSource="/Icons/Jazz.ico"
-        MenuActivation="LeftOrRightClick"
-        PopupActivation="DoubleClick"
-        ToolTipText="{Binding ToolTipText}"
-        Visibility="Visible">
-
-        <tb:TaskbarIcon.ContextMenu>
-            <ContextMenu>
-                <MenuItem Command="{Binding SyncTimeCommand}" Header="同步时间(_S)">
-                    <MenuItem.Icon>
-                        <Image
-                            Width="16"
-                            Height="16"
-                            Source="/Icons/tool_timer.ico" />
-                    </MenuItem.Icon>
-                </MenuItem>
-
-                <Separator />
-
-                <MenuItem Command="{Binding ExitCommand}" Header="退出(_X)">
-                    <MenuItem.Icon>
-                        <Image
-                            Width="16"
-                            Height="16"
-                            Source="/Icons/aim_offline.ico" />
-                    </MenuItem.Icon>
-                </MenuItem>
-            </ContextMenu>
-        </tb:TaskbarIcon.ContextMenu>
-    </tb:TaskbarIcon>-->
-
 </Window>
 

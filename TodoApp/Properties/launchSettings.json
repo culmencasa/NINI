@@ -1,0 +1,20 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": false,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:13554",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true
+    },
+    "TodoApp": {
+      "commandName": "Project",
+      "applicationUrl": "https://localhost:13554;http://localhost:13554"
+    }
+  }
+}

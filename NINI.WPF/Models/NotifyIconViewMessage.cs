@@ -5,13 +5,14 @@ using System.Text;
 
 namespace NINI.Models
 {
-    public class MainViewMessage
+    public class NotifyIconViewMessage
     {
         public enum Signals
         {
             None,
             OpenWindow, 
             SyncTime,
+            ShowTodo
         }
 
         public Signals Signal { get; set; }

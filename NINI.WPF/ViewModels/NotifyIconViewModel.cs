@@ -6,15 +6,16 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Utils.Misc;
 
 namespace NINI.ViewModels
 {
-    public class MainViewModel : ViewModelBase
+    public class NotifyIconViewModel : ViewModelBase
     {
-        public MainViewModel()
+        public NotifyIconViewModel()
         {
             ToolTipText = GetIPString();
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
@@ -23,38 +24,32 @@ namespace NINI.ViewModels
             ExitCommand = new RelayCommand(ExitCommandAction);
             DoubleClickCommand = new RelayCommand(DoubleClickAcion);
 
-            SimpleMessenger.Default.Subscribe<MainViewMessage>(this, HandleMainViewMessage);
+            //SimpleMessenger.Default.Subscribe<NotifyIconViewMessage>(this, HandleMainViewMessage);
         }
 
 
         #region Actions for Commands, Messages
 
-        private void SyncTimeCommandAction()
+        private async void SyncTimeCommandAction()
         {
-            bool synced = false;
-
-            try
+            await Task.Run(() =>
             {
                 var dt = SyncTime.GetBJTime();
 
-                synced = SyncTime.SetSystemTime(dt);
-            }
-            catch
-            {
-
-            }
-            finally
-            {
-                if (synced)
+                if (DateTime.Now.ToString("yyyy-MM-dd HH:mm") == dt.ToString("yyyy-MM-dd HH:mm"))
                 {
-                    SimpleMessenger.Default.Publish(new GeneralMessage()
-                    {
-                        Signal = GeneralMessage.Types.ShowBallon,
-                        Title = "Time Synced.",
-                        Content = DateTime.Now.ToString()
-                    });
+                    return;
                 }
-            }
+
+                SyncTime.SetSystemTime(dt);
+
+                SimpleMessenger.Default.Publish(new GeneralMessage()
+                {
+                    Signal = GeneralMessage.Types.ShowBallon,
+                    Title = "Time Synced.",
+                    Content = DateTime.Now.ToString()
+                });
+            });            
         }
 
         private void ExitCommandAction()
@@ -64,21 +59,50 @@ namespace NINI.ViewModels
 
         private void DoubleClickAcion()
         {
-            SimpleMessenger.Default.Publish(new MainViewMessage()
+            SimpleMessenger.Default.Publish(new NotifyIconViewMessage()
             {
-                Signal = MainViewMessage.Signals.OpenWindow,
+                Signal = NotifyIconViewMessage.Signals.OpenWindow,
                 Parameter = null
             });
         }
 
+
         #endregion
 
-        private void HandleMainViewMessage(MainViewMessage msg)
+        private async void HandleMainViewMessage(NotifyIconViewMessage msg)
         {
             switch (msg.Signal)
             {
-                case MainViewMessage.Signals.SyncTime:
-                    SyncTimeCommandAction();
+                case NotifyIconViewMessage.Signals.SyncTime:
+                    await Task.Run(()=>
+                    {
+                        bool synced = false;
+                        try
+                        {
+                            var dt = SyncTime.GetBJTime();
+                            synced = SyncTime.SetSystemTime(dt);
+                        }
+                        catch
+                        {
+
+                        }
+                        finally
+                        {
+                            if (synced)
+                            {
+                                if (msg.Parameter?.ToString() != "Slient")
+                                {
+                                    SimpleMessenger.Default.Publish(new GeneralMessage()
+                                    {
+                                        Signal = GeneralMessage.Types.ShowBallon,
+                                        Title = "Time Synced.",
+                                        Content = DateTime.Now.ToString()
+                                    });
+                                }
+                            }
+                        } 
+                    });
+                    
                     break;
                 default:
                     break;
@@ -131,6 +155,7 @@ namespace NINI.ViewModels
         public ICommand SyncTimeCommand { get; set; }
         public ICommand ExitCommand { get; set; }
         public ICommand DoubleClickCommand { get; private set; }
+
 
         #endregion
 

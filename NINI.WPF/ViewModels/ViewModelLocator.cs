@@ -29,17 +29,17 @@ namespace NINI.ViewModels
             //containerBuilder.RegisterType<SelectFileDialogService>().Named<IOutputDialogService>("SelectFileDialogService").AsSelf();
 
             //containerBuilder.RegisterInstance(SimpleMessenger.Default).As<IMessenger>();
-            containerBuilder.RegisterType<MainViewModel>().AsSelf().SingleInstance();
+            containerBuilder.RegisterType<NotifyIconViewModel>().AsSelf().SingleInstance();
             containerBuilder.RegisterType<RunViewModel>().AsSelf().SingleInstance();
 
             _container = containerBuilder.Build();
         }
 
-        public MainViewModel Main
+        public NotifyIconViewModel NotifyIconVM
         {
             get
             {
-                return _container.Resolve<MainViewModel>();
+                return _container.Resolve<NotifyIconViewModel>();
             }
         }
 
