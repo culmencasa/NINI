@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Security.Policy;
 
-namespace NINI
+namespace NINI.Helper
 {
     /// <summary>
     /// An object that provides basic logging capabilities.

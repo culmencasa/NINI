@@ -1,4 +1,5 @@
 ﻿using MVVMLib;
+using NINI.Helper;
 using NINI.Models;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,9 @@ namespace NINI.ViewModels
     {
         public NotifyIconViewModel()
         {
-            ToolTipText = GetIPString();
+            //todo:加上外网IP
+
+            ToolTipText = GetLocalIPString();
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
 
             SyncTimeCommand = new RelayCommand(SyncTimeCommandAction);
@@ -118,7 +121,7 @@ namespace NINI.ViewModels
                     Console.WriteLine("AvaiableChanged:" + state);
 
 
-                    ToolTipText = GetIPString();
+                    ToolTipText = GetLocalIPString();
                 }
                 else
                 {
@@ -165,7 +168,7 @@ namespace NINI.ViewModels
         /// 获取IP地址
         /// </summary>
         /// <returns></returns>
-        public static string GetIPString()
+        public static string GetLocalIPString()
         {
             string ipString = "";
             try

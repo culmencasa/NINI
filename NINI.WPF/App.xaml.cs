@@ -1,5 +1,6 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using MVVMLib;
+using NINI.Helper;
 using NINI.Models;
 using NINI.ViewModels;
 using System;
@@ -8,6 +9,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
@@ -39,6 +41,9 @@ namespace NINI
         private TaskbarIcon notifyIcon;
         private ViewModelLocator locator;
         private Process todoProcess;
+
+
+        KeyboardHook hook = new KeyboardHook();
 
         private void App_Exit(object sender, ExitEventArgs e)
         {
@@ -99,24 +104,27 @@ namespace NINI
             //todoProcess = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.exe");
 
 
-            string command = "dotnet application.dll --urls=http://*:5123";
+            //string command = "dotnet application.dll --urls=http://*:5123";
 
-            Process proc = new System.Diagnostics.Process();
+            //Process proc = new System.Diagnostics.Process();
+            //proc.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.exe";
+            ////proc.StartInfo.Arguments = AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.dll";
+            //proc.StartInfo.UseShellExecute = false;
+            //proc.StartInfo.RedirectStandardOutput = true;
+            //proc.StartInfo.Verb = "runas";
+            //proc.Start();
+
+            //todoProcess = proc;
 
 
-            //proc.StartInfo.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\wwwroot";
-            proc.StartInfo.FileName = "dotnet";
-            proc.StartInfo.Arguments = AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.dll";
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = false;
-            proc.Start();
 
-            todoProcess = proc;
+            hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            todoProcess.Kill();
+            todoProcess?.Kill();
 
             SimpleMessenger.Default.Unsubscribe(this);
             notifyIcon?.Dispose();
@@ -214,5 +222,19 @@ namespace NINI
             }
             return null;
         }
+
+
+        static void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.Verb = "runas";
+            p.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            p.StartInfo.FileName = "cmd";
+            p.StartInfo.Arguments = "";
+            p.Start();
+
+        }
+
     }
 }

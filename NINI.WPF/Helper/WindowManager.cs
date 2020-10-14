@@ -7,7 +7,7 @@ using System.Linq;
 using System.ComponentModel;
 using System.Security.Policy;
 
-namespace NINI
+namespace NINI.Helper
 {
 
     /// <summary>
