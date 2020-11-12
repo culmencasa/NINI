@@ -11,6 +11,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
@@ -26,8 +27,7 @@ namespace NINI
     {
 
         public App()
-        {
-            Exit += App_Exit;
+        { 
         }
 
 
@@ -38,18 +38,22 @@ namespace NINI
         #endregion
 
 
+
+        /// <summary>
+        /// Http服务
+        /// </summary>
+        public static SimpleHttpServer HttpServer { get; private set; }
+
+
+
         private TaskbarIcon notifyIcon;
         private ViewModelLocator locator;
         private Process todoProcess;
 
 
-        KeyboardHook hook = new KeyboardHook();
 
-        private void App_Exit(object sender, ExitEventArgs e)
-        {
-            var locator = (ViewModelLocator)FindResource("Locator");
-            locator?.Dispose();
-        }
+        KeyboardHook hook = new KeyboardHook();
+         
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -90,16 +94,23 @@ namespace NINI
             locator = (ViewModelLocator)FindResource("Locator");
 
 
+            //Start HttpServer
+            HttpServer = new SimpleHttpServer(AppDomain.CurrentDomain.BaseDirectory + "\\TodoWeb","127.0.0.1", 13554);
+            HttpServer.Start();
+
+
             SimpleMessenger.Default.Subscribe<GeneralMessage>(this, HandleGeneralMessage);
             SimpleMessenger.Default.Subscribe<NotifyIconViewMessage>(this, HandleSimpleCommand);
 
 
+            // 自启动任务
             SimpleMessenger.Default.Publish(new NotifyIconViewMessage()
             {
                 Signal = NotifyIconViewMessage.Signals.SyncTime,
                 Parameter = "Slient"
             });
 
+            WindowManager.Single<TodoWindow>().Preload();
 
             //todoProcess = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.exe");
 
@@ -119,7 +130,15 @@ namespace NINI
 
 
             hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-            hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
+            try
+            {
+                hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
+            }
+            catch
+            {
+                notifyIcon?.ShowBalloonTip(DateTime.Now.ToShortTimeString(), "快捷键注册失败", BalloonIcon.Info);
+            }
+
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -130,6 +149,12 @@ namespace NINI
             notifyIcon?.Dispose();
             base.OnExit(e);
 
+
+            var locator = (ViewModelLocator)FindResource("Locator");
+            locator?.Dispose();
+            HttpServer?.Stop();
+
+            WindowManager.CloseAll();
         }
 
         private void HandleGeneralMessage(GeneralMessage msg)
@@ -164,6 +189,7 @@ namespace NINI
                     break;
                 case NotifyIconViewMessage.Signals.ShowTodo:
                     {
+                        // 废弃
                         TodoWindow todoWindow = WindowManager.Single<TodoWindow>();
                         todoWindow.Show();
                     }
@@ -235,6 +261,7 @@ namespace NINI
             p.Start();
 
         }
+
 
     }
 }

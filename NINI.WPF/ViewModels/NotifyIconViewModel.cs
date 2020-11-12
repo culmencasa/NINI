@@ -60,6 +60,8 @@ namespace NINI.ViewModels
             Application.Current.Shutdown();
         }
 
+
+        // 废弃
         private void DoubleClickAcion()
         {
             SimpleMessenger.Default.Publish(new NotifyIconViewMessage()

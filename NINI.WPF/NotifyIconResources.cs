@@ -17,9 +17,10 @@ namespace NINI
         /// <param name="e"></param>
         public void TrayLeftMouseDownHandler(object sender, RoutedEventArgs e)
         {
-
             TodoWindow todoWindow = WindowManager.Single<TodoWindow>();
-            todoWindow.Show();
+
+            todoWindow.SwitchShowHide();
+
         }
     }
 }

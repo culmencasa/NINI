@@ -9,7 +9,7 @@
     <tb:TaskbarIcon
         x:Key="MyNotifyIcon"
         TrayLeftMouseDown="TrayLeftMouseDownHandler"
-        DoubleClickCommand="{Binding DoubleClickCommand}"
+        
         IconSource="/Icons/Jazz.ico"
         MenuActivation="RightClick"
         PopupActivation="DoubleClick"

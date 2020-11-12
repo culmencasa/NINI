@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!--
-https://go.microsoft.com/fwlink/?LinkID=208121. 
--->
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <_PublishTargetUrl>F:\MyRepos\NINI\NINI.WPF\bin\Debug\netcoreapp3.1\TodoApp</_PublishTargetUrl>
-  </PropertyGroup>
-</Project>

@@ -19,12 +19,14 @@ namespace NINI
     /// <summary>
     /// RunWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class RunWindow
+    public partial class RunWindow : SingleWindow
     {
         public RunWindow()
         {
             InitializeComponent();
         }
+
+        public bool ForceClose { get; set; }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {

@@ -24,7 +24,7 @@ namespace NINI
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : SingleWindow
     {
         public MainWindow()
         {
@@ -33,32 +33,15 @@ namespace NINI
             this.Hide();
 
             this.Loaded += MainWindow_Loaded;
-            this.Closed += MainWindow_Closed;
         }
 
-        public bool IsClosed { get; set; }
+
+        public bool ForceClose { get; set; }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
         }
 
-        private void MainWindow_Closed(object sender, EventArgs e)
-        {
-            if (IsClosed)
-            {
-            }
-        }
-
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
-
-            if (!e.Cancel)
-            {
-                IsClosed = true;
-            }
-        }
 
         private void Window_Drop(object sender, DragEventArgs e)
         {            

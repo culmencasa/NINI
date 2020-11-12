@@ -6,6 +6,7 @@ using System.Windows;
 using System.Linq;
 using System.ComponentModel;
 using System.Security.Policy;
+using System.Runtime.InteropServices;
 
 namespace NINI.Helper
 {
@@ -21,7 +22,7 @@ namespace NINI.Helper
         #region 公开方法
 
         /// <summary>
-        /// 获取一个与指定条件匹配的窗体对象，如果未找到默认会创建一个
+        /// 获取一个与指定条件匹配的窗体对象，如果未找到默认会创建一个. 窗体不会关闭，只会隐藏。
         /// </summary>
         /// <typeparam name="TWindow">窗体类型</typeparam>
         /// <param name="createIfNotFound">如果主动创建</param>
@@ -39,11 +40,6 @@ namespace NINI.Helper
                 if (instance == null)
                 {
                     instance = CreateInstance<TWindow>(parameters);
-                    instance.Closing += delegate (object sender, CancelEventArgs e)
-                    {
-                        e.Cancel = true;
-                        instance.Hide();
-                    };
                     instance.Closed += delegate (object sender, EventArgs e)
                     {
                         FixedSingleFormCache.Remove(instance);
@@ -111,7 +107,7 @@ namespace NINI.Helper
         {
             TWindow instance = null;
 
-            foreach (TWindow form in FixedSingleFormCache)
+            foreach (var form in FixedSingleFormCache)
             {
                 TWindow comparingTarget = form as TWindow;
                 if (keySelector != null)
@@ -242,5 +238,26 @@ namespace NINI.Helper
         }
 
 
+
+
+
+
+        const int SWP_NOZORDER = 0x4;
+        const int SWP_NOACTIVATE = 0x10;
+
+        [DllImport("kernel32")]
+        static extern IntPtr GetConsoleWindow();
+
+
+        [DllImport("user32")]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
+            int x, int y, int cx, int cy, int flags);
+        /// <summary>
+        /// Sets the console window location and size in pixels
+        /// </summary>
+        public static void SetWindowPosition(IntPtr handle, int x, int y, int width, int height)
+        {
+            SetWindowPos(handle, IntPtr.Zero, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+        }
     }
 }
