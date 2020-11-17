@@ -25,7 +25,7 @@ namespace NINI.ViewModels
 
             SyncTimeCommand = new RelayCommand(SyncTimeCommandAction);
             ExitCommand = new RelayCommand(ExitCommandAction);
-            DoubleClickCommand = new RelayCommand(DoubleClickAcion);
+            OpenMainWindowCommand = new RelayCommand(OpenMainWindowAcion);
 
             //SimpleMessenger.Default.Subscribe<NotifyIconViewMessage>(this, HandleMainViewMessage);
         }
@@ -62,7 +62,7 @@ namespace NINI.ViewModels
 
 
         // 废弃
-        private void DoubleClickAcion()
+        private void OpenMainWindowAcion()
         {
             SimpleMessenger.Default.Publish(new NotifyIconViewMessage()
             {
@@ -159,7 +159,7 @@ namespace NINI.ViewModels
 
         public ICommand SyncTimeCommand { get; set; }
         public ICommand ExitCommand { get; set; }
-        public ICommand DoubleClickCommand { get; private set; }
+        public ICommand OpenMainWindowCommand { get; private set; }
 
 
         #endregion

@@ -155,8 +155,10 @@ namespace NINI.Helper
             /// <summary>
             /// Retrieves the location (path and index) of the icon for a Shell link object
             /// </summary>
-            void GetIconLocation([Out(), MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath,
-                int cchIconPath, out int piIcon);
+            /// <param name="pszIconPath">The address of a buffer that receives the path of the file containing the icon</param>
+            /// <param name="cch">The maximum number of characters to copy to the buffer pointed to by the pszIconPath parameter.</param>
+            /// <param name="piIcon">The address of a value that receives the index of the icon</param>
+            int GetIconLocation([Out(), MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cch, out int piIcon);
             /// <summary>
             /// Sets the location (path and index) of the icon for a Shell link object
             /// </summary>
@@ -222,12 +224,103 @@ namespace NINI.Helper
         {
             ShellLink link = new ShellLink();
             ((IPersistFile)link).Load(filename, STGM_READ);
-            // TODO: if I can get hold of the hwnd call resolve first. This handles moved and renamed files.  
+
             // ((IShellLinkW)link).Resolve(hwnd, 0) 
             StringBuilder sb = new StringBuilder(MAX_PATH);
             WIN32_FIND_DATAW data = new WIN32_FIND_DATAW();
             ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, 0);
+
             return sb.ToString();
         }
+
+        public static void ResolveShortcut(string filename, out string name, out string command, out string args, out string description, out string iconLocation, out int iconIndex)
+        {
+            ShellLink link = new ShellLink();
+            ((IPersistFile)link).Load(filename, STGM_READ);
+            //((IShellLinkW)link).Resolve(IntPtr.Zero, SLR_FLAGS.SLR_ANY_MATCH);
+
+            StringBuilder sb = new StringBuilder(MAX_PATH);
+            WIN32_FIND_DATAW data = new WIN32_FIND_DATAW();
+            ((IShellLinkW)link).GetPath(sb, sb.Capacity, out data, SLGP_FLAGS.SLGP_RAWPATH);
+            command = sb.ToString();
+
+            sb = new StringBuilder(MAX_PATH); 
+            ((IShellLinkW)link).GetArguments(sb, sb.Capacity);
+            args = sb.ToString();
+
+            description = "";
+            try
+            {
+                sb = new StringBuilder(MAX_PATH);
+                ((IShellLinkW)link).GetDescription(sb, sb.Capacity);
+                description = sb.ToString();
+            }
+            catch (COMException ex)
+            {
+            }
+
+            sb = new StringBuilder(MAX_PATH); 
+            var hresult = ((IShellLinkW)link).GetIconLocation(sb, sb.Capacity, out iconIndex);
+            iconLocation = sb.ToString();
+            if (hresult != 0)
+            {
+                //CoreLib.Log("GetIconLocation result: " + hresult);
+            }
+
+            name = GetLocalizedName.GetName(filename);
+        }
+
+    }
+
+    /* https://github.com/gitter-badger/abanu/blob/master/src/win32/LocationName.cs */
+    class GetLocalizedName
+    {
+        [DllImport("shell32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal static extern int SHGetLocalizedName(string pszPath, StringBuilder pszResModule, ref int cch, out int pidsRes);
+
+        [DllImport("user32.dll", EntryPoint = "LoadStringW", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
+        internal static extern int LoadString(IntPtr hModule, int resourceID, StringBuilder resourceValue, int len);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, EntryPoint = "LoadLibraryExW")]
+        internal static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hFile, uint dwFlags);
+
+        internal const uint DONT_RESOLVE_DLL_REFERENCES = 0x00000001;
+        internal const uint LOAD_LIBRARY_AS_DATAFILE = 0x00000002;
+
+        [DllImport("kernel32.dll", ExactSpelling = true)]
+        internal static extern int FreeLibrary(IntPtr hModule);
+
+        [DllImport("kernel32.dll", EntryPoint = "ExpandEnvironmentStringsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        internal static extern uint ExpandEnvironmentStrings(string lpSrc, StringBuilder lpDst, int nSize);
+
+        public static string GetName(string path)
+        {
+            StringBuilder sb = new StringBuilder(500);
+            int len, id;
+            len = sb.Capacity;
+
+            if (SHGetLocalizedName(path, sb, ref len, out id) == 0)
+            {
+                ExpandEnvironmentStrings(sb.ToString(), sb, sb.Capacity);
+                IntPtr hMod = LoadLibraryEx(sb.ToString(), IntPtr.Zero, DONT_RESOLVE_DLL_REFERENCES | LOAD_LIBRARY_AS_DATAFILE);
+                if (hMod != IntPtr.Zero)
+                {
+                    try
+                    {
+                        if (LoadString(hMod, id, sb, sb.Capacity) != 0)
+                        {
+                            return sb.ToString();
+                        }
+                    }
+                    finally
+                    {
+                        FreeLibrary(hMod);
+                    }
+                }
+            }
+            return System.IO.Path.GetFileNameWithoutExtension(path);
+        }
+
+
     }
 }

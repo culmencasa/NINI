@@ -20,6 +20,9 @@
         </tb:TaskbarIcon.DataContext>
         <tb:TaskbarIcon.ContextMenu>
             <ContextMenu>
+                <MenuItem Command="{Binding OpenMainWindowCommand}" Header="主窗口">
+                    
+                </MenuItem>
                 <MenuItem Command="{Binding SyncTimeCommand}" Header="同步时间(_S)">
                     <MenuItem.Icon>
                         <Image Width="16" Height="16" />
@@ -28,6 +31,7 @@
 
                 <Separator />
 
+                
                 <MenuItem Command="{Binding ExitCommand}" Header="退出(_X)">
                     <MenuItem.Icon>
                         <Image Width="16" Height="16" />

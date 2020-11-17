@@ -1,5 +1,7 @@
 ﻿using LiteDB;
+using NINI.Helper;
 using NINI.Models;
+using NINI.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,14 +21,19 @@ namespace NINI
     /// <summary>
     /// RunWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class RunWindow : SingleWindow
+    public partial class RunWindow
     {
         public RunWindow()
         {
             InitializeComponent();
+            Loaded += RunWindow_Loaded;
         }
 
-        public bool ForceClose { get; set; }
+        private void RunWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            var vm = (RunViewModel)DataContext;
+            vm.LoadCommand.Execute(null);
+        }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -87,6 +94,8 @@ namespace NINI
             //}
 
         }
+
+
 
     }
 }
