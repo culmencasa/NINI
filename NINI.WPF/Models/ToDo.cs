@@ -9,6 +9,27 @@ namespace NINI.Models
 {
     public class ToDo : ObservableObject
     {
+        public ToDo()
+        {
+            //Guid = System.Guid.NewGuid().ToString("N");
+            ShowWatermarks = true;
+        }
+
+
+        private string _guid;
+        public string Guid
+        {
+            get
+            {
+                return _guid;
+            }
+            set
+            {
+                Set(ref _guid, value);
+            }
+        }
+
+
         private string _title;
         public string Title
         {
@@ -19,6 +40,14 @@ namespace NINI.Models
             set
             {
                 Set(ref _title, value);
+                if (string.IsNullOrEmpty(_title))
+                {
+                    ShowWatermarks = true;
+                }
+                else
+                {
+                    ShowWatermarks = false;
+                }
             }
         }
 
@@ -34,5 +63,17 @@ namespace NINI.Models
                 Set(ref _isDone, value);
             }
         }
+
+        private bool _showWatermarks;
+        public bool ShowWatermarks 
+        { 
+            get => _showWatermarks; 
+            set 
+            {
+                Set(ref _showWatermarks, value);
+            } 
+        }
+
+
     }
 }

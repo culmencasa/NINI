@@ -1,4 +1,5 @@
 ﻿using NINI.Helper;
+using NINI.Views;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,10 +18,11 @@ namespace NINI
         /// <param name="e"></param>
         public void TrayLeftMouseDownHandler(object sender, RoutedEventArgs e)
         {
-            TodoWindow todoWindow = WindowManager.Single<TodoWindow>();
+            //TodoWindow todoWindow = WindowManager.Single<TodoWindow>();
+            //todoWindow.SwitchShowHide();
 
-            todoWindow.SwitchShowHide();
 
+            WindowManager.Single<ToDoComment>().Show();
         }
     }
 }

@@ -23,6 +23,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <COMReference Include="MSHTML.dll">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>4</VersionMajor>
+      <Guid>3050f1c5-98b5-11cf-bb82-00aa00bdce0b</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+    </COMReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="5.2.0" />
     <PackageReference Include="gong-wpf-dragdrop" Version="2.3.2" />
     <PackageReference Include="HandyControl" Version="2.5.0.2" />
@@ -41,10 +52,8 @@
     <Resource Include="Icons\tool_timer.ico" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="TodoWeb\Index.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy $(SolutionDir)libs\*.* $(OutDir) /y" />
+  </Target>
 
 </Project>

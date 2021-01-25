@@ -24,9 +24,5 @@ namespace NINI.Views
             InitializeComponent();
         }
 
-        private void ToDoItem_OnEnterPressed()
-        {
-
-        }
     }
 }

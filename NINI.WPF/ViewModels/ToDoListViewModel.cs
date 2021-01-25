@@ -32,11 +32,32 @@ namespace NINI.ViewModels
 
         public void DeleteAction(ToDo item)
         {
-            if (ToDoes.Contains(item))
-            {
-                ToDoes.Remove(item);
-            }
+            ToDoes.Remove(item);
+
+            // 保存到数据库
         }
+
+
+        public void AppendAfter(ToDo current)
+        {
+            //todo: 保存当前项到数据库
+
+            int index = ToDoes.IndexOf(current);
+            if (index < 0)
+                return;
+
+            ToDoes.Insert(index + 1, new ToDo());
+        }
+
+        public void Giveup(ToDo item)
+        {
+            ToDoes.Remove(item);
+
+            // 显示撤消提示框 
+
+            // 保存到数据库
+        }
+         
     }
 
 

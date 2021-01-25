@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
+using System.Windows.Navigation;
 using System.Windows.Threading;
 
 namespace NINI
@@ -25,6 +26,16 @@ namespace NINI
         {
             InitializeComponent();
             this.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            this.Topmost = true;
+            
+
+            //SizeChanged += (o, e) =>
+            //{
+            //    var r = SystemParameters.WorkArea;
+            //    Left = r.Right - ActualWidth;
+            //    Top = r.Bottom - ActualHeight;
+            //};
 
 
             Loaded += TodoWindow_Loaded;
@@ -64,14 +75,12 @@ namespace NINI
           
         #region 动画
 
-
-        DispatcherTimer preloadWaiter;        
+    
         DoubleAnimation showAnimation;
         ManualResetEvent animationDone = new ManualResetEvent(true);
-        bool webcontentLoaded = false;
 
         /// <summary>
-        /// 窗体状态
+
         /// 0 close 
         /// 1 open 
         /// 2 closing 
@@ -87,18 +96,27 @@ namespace NINI
         /// <param name="e"></param>
         private void TodoWindow_Activated(object sender, EventArgs e)
         {
-            int taskbarHeight = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height;
-            this.Left = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width - this.ActualWidth;
-            this.Top = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - taskbarHeight;
+            //int taskbarHeight = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - System.Windows.Forms.Screen.PrimaryScreen.WorkingArea.Height;
+            //this.Left = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width - this.ActualWidth;
+            //this.Top = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - taskbarHeight;
+
+
+
+            var r = SystemParameters.WorkArea;
+            var left = r.Right - ActualWidth;
+            var start_top = r.Bottom;
+            var end_top = r.Bottom - ActualHeight;
+
+            this.Left = left;
 
             // 初始化动画
             if (showAnimation == null)
             {
                 showAnimation = new DoubleAnimation(
-                    fromValue: System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - taskbarHeight,
-                    toValue: System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height - this.ActualHeight - taskbarHeight,
+                    fromValue: start_top,
+                    toValue: end_top,
                     new Duration(TimeSpan.FromMilliseconds(200)));
-                //showAnimation.AccelerationRatio = 0.5; // 加速度
+                showAnimation.AccelerationRatio = 0.5; // 加速度
                 showAnimation.Completed += (a, b) =>
                 {
                     animationDone.Set();
@@ -133,6 +151,14 @@ namespace NINI
 
         #endregion
 
+        #region 属性
+
+        /// <summary>
+        /// 网页是否加载完成
+        /// </summary>
+        public bool WebContentLoaded { get; set; }
+
+        #endregion
 
         #region 公开方法
 
@@ -160,52 +186,6 @@ namespace NINI
             }
         }
 
-        /// <summary>
-        /// 预加载网页
-        /// </summary>
-        public void Preload()
-        {
-            // 让窗体不显示在屏幕内
-            this.WindowStartupLocation = WindowStartupLocation.Manual;
-            this.Top = Int32.MinValue;
-            this.Left = Int32.MinValue;
-            this.ShowActivated = false; 
-            this.ShowInTaskbar = false;
-
-
-            // 触发Load事件，开始加载网页
-            base.Show();
-            
-
-
-            int t1 = Environment.TickCount;
-
-            // 3秒后恢复
-            preloadWaiter = new DispatcherTimer(DispatcherPriority.Background);
-            preloadWaiter.Interval = TimeSpan.FromMilliseconds(100);
-            preloadWaiter.Tick += (t, e) =>
-            {
-                int t2 = Environment.TickCount;
-                if (webcontentLoaded)
-                {
-                    preloadWaiter.Stop();
-                    Debug.WriteLine(t2 - t1);
-                    this.Hide();
-                    ShowActivated = true;
-                }
-                else if (t2 - t1 > 1500) // 超过1秒关闭
-                {
-                    preloadWaiter.Stop();
-                    this.Hide();
-                    ShowActivated = true;
-                }
-            };
-            preloadWaiter.Start();
-
-
-        }
-
-
 
         #endregion
 
@@ -214,13 +194,25 @@ namespace NINI
 
         private void TodoWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            webcontentLoaded = false;
+            WebContentLoaded = false;
 
+
+            // 自己写的todo页面（问题：需要自己实现同步）
+            //string url = "http://127.0.0.1:13554";
+
+            // 谷歌todo(问题：翻墙。不支持IE, 需要换成WebView2控件或其他WebView
+            //string url = "https://tasks.google.com/embed/?origin=https://calendar.google.com&fullWidth=1";
+
+            // 微软todo
             string url = "https://to-do.live.com/tasks/";
-            //url = "http://127.0.0.1:13554";
-            //url = "https://tasks.google.com/embed/?origin=https://calendar.google.com&fullWidth=1"; // 不支持IE, 将来可换成WebView2控件
+            //url = "https://to-do.live.com/tasks/?app";
+            // 2021-01-22 注释掉代码 改用miniblink
             browser.Navigate(url);
+
+
         }
+
+
 
         #endregion
 
@@ -242,8 +234,17 @@ namespace NINI
         {
             SuppressScriptErrors((WebBrowser)sender, true);
 
-            webcontentLoaded = true;
+            WebContentLoaded = true;
 
+
+            //try
+            //{
+            //    browser.InvokeScript("execScript", removeScript1);
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine("BrowserHelper Failed to install mouse script in WebBrowser");
+            //}
         }
 
 
@@ -251,5 +252,9 @@ namespace NINI
 
         #endregion
 
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            //bb.RunJs($"alert(document.getElementById('footerArea'));document.getElementById('footerArea').remove()");
+        }
     }
 }

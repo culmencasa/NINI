@@ -2,15 +2,25 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                    mc:Ignorable="d"
         ShowInTaskbar="False"
+        WindowChrome.WindowChrome="{DynamicResource WindowChromeKey}" 
+                    WindowStyle="None" ResizeMode="NoResize" Background="Gray"
         Height="450" Width="400">
-
+    <Window.Resources>
+        <WindowChrome x:Key="WindowChromeKey">
+            <WindowChrome.ResizeBorderThickness>
+                <Thickness>0</Thickness>
+            </WindowChrome.ResizeBorderThickness>
+        </WindowChrome>
+    </Window.Resources>
     <Grid>
-        <WebBrowser x:Name="browser" Navigated="browser_Navigated"   />
 
-        
+        <!--<mb:MiniblinkBrowser x:Name="bb"></mb:MiniblinkBrowser>-->
+        <WebBrowser x:Name="browser" Navigated="browser_Navigated"  />
+
+        <Button Height="30" Content="test" Click="Button_Click" VerticalAlignment="Bottom"  />
 
 
     </Grid>

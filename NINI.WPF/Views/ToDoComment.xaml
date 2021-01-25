@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NINI.Views" xmlns:controls="clr-namespace:NINI.Controls"
+        xmlns:local="clr-namespace:NINI.Views" 
         mc:Ignorable="d"
         DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}"
         Title="TodoComment" Height="400" Width="300" Padding="6">
@@ -35,7 +35,7 @@
         </Grid>
 
         <StackPanel>
-            <controls:ToDoList DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}" />
+            <local:ToDoList DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}" />
         </StackPanel>
     </Grid>
 </Window>

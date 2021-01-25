@@ -3,6 +3,7 @@ using MVVMLib;
 using NINI.Helper;
 using NINI.Models;
 using NINI.ViewModels;
+using NINI.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,7 +17,8 @@ using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows; 
+using System.Windows;
+using System.Windows.Threading;
 
 namespace NINI
 {
@@ -42,7 +44,7 @@ namespace NINI
         /// <summary>
         /// Http服务
         /// </summary>
-        public static SimpleHttpServer HttpServer { get; private set; }
+        public SimpleHttpServer HttpServer { get; private set; }
 
 
 
@@ -52,7 +54,7 @@ namespace NINI
 
 
 
-        KeyboardHook hook = new KeyboardHook();
+        private KeyboardHook hook = new KeyboardHook();
          
 
         protected override void OnStartup(StartupEventArgs e)
@@ -110,7 +112,9 @@ namespace NINI
                 Parameter = "Slient"
             });
 
-            WindowManager.Single<TodoWindow>().Preload();
+            PreloadTodoWindow();
+
+            WindowManager.Single<ToDoComment>().Show();
 
             //todoProcess = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.exe");
 
@@ -141,6 +145,10 @@ namespace NINI
 
         }
 
+
+        
+
+
         protected override void OnExit(ExitEventArgs e)
         {
             todoProcess?.Kill();
@@ -168,6 +176,12 @@ namespace NINI
                     break;
             }
         }
+
+
+        /// <summary>
+        /// 处理任务栏图标命令
+        /// </summary>
+        /// <param name="msg"></param>
         private void HandleSimpleCommand(NotifyIconViewMessage msg)
         {
             switch (msg.Signal)
@@ -199,7 +213,10 @@ namespace NINI
             }
         }
 
-        private static void RunThisAsAdmin()
+        /// <summary>
+        /// 重新以管理员身份运行
+        /// </summary>
+        private void RunThisAsAdmin()
         {
             if (!IsAdministrator())
             {
@@ -222,16 +239,22 @@ namespace NINI
             }
         }
 
-
-        private static bool IsAdministrator()
+        /// <summary>
+        /// 判断是否管理员身份运行
+        /// </summary>
+        /// <returns></returns>
+        private bool IsAdministrator()
         {
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-
-        public static Process GetProcInstance()
+        /// <summary>
+        /// 获取程序的进程
+        /// </summary>
+        /// <returns></returns>
+        public Process GetProcInstance()
         {
             Process current = Process.GetCurrentProcess();
             Process[] processes = Process.GetProcessesByName(current.ProcessName);
@@ -250,7 +273,7 @@ namespace NINI
         }
 
 
-        static void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
             Process p = new Process();
             p.StartInfo.UseShellExecute = false;
@@ -259,9 +282,48 @@ namespace NINI
             p.StartInfo.FileName = "cmd";
             p.StartInfo.Arguments = "";
             p.Start();
-
         }
 
+        /// <summary>
+        /// 预加载Todo窗体
+        /// </summary>
+        private void PreloadTodoWindow()
+        {
+            var todoWindow = WindowManager.Single<TodoWindow>();
+            // 让窗体不显示在屏幕内
+            todoWindow.WindowStartupLocation = WindowStartupLocation.Manual;
+            todoWindow.Top = Int32.MinValue;
+            todoWindow.Left = Int32.MinValue;
+            todoWindow.ShowActivated = false;
+            todoWindow.ShowInTaskbar = false;
+
+            // 触发Load事件，开始加载网页
+            todoWindow.Show();
+
+            int t1 = Environment.TickCount;
+
+            // 3秒后恢复
+            var preloadWaiter = new DispatcherTimer(DispatcherPriority.Background);
+            preloadWaiter.Interval = TimeSpan.FromMilliseconds(100);
+            preloadWaiter.Tick += (t, e) =>
+            {
+                int t2 = Environment.TickCount;
+                if (todoWindow.WebContentLoaded)
+                {
+                    preloadWaiter.Stop();
+                    Debug.WriteLine(t2 - t1);
+                    todoWindow.Hide();
+                    todoWindow.ShowActivated = true;
+                }
+                else if (t2 - t1 > 1500) // 超过1秒关闭
+                {
+                    preloadWaiter.Stop();
+                    todoWindow.Hide();
+                    todoWindow.ShowActivated = true;
+                }
+            };
+            preloadWaiter.Start();
+        }
 
     }
 }

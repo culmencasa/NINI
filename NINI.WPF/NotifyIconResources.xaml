@@ -31,6 +31,15 @@
 
                 <Separator />
 
+                <MenuItem Command="{Binding }" Header="Run">
+
+                </MenuItem>
+                <MenuItem Command="{Binding }" Header="This Computer">
+
+                </MenuItem>
+                <MenuItem Command="{Binding }" Header="关机">
+                    
+                </MenuItem>
                 
                 <MenuItem Command="{Binding ExitCommand}" Header="退出(_X)">
                     <MenuItem.Icon>
