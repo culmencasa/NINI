@@ -120,14 +120,11 @@ namespace NINI.ViewModels
                 var state = NetworkChecker.IsNetworkAvailable();
                 if (state)
                 {
-                    Console.WriteLine("AvaiableChanged:" + state);
-
-
                     ToolTipText = GetLocalIPString();
                 }
                 else
                 {
-                    ToolTipText = "Network Connection Lost.";
+                    ToolTipText = "网络状态丢失";
                 }
         }
 

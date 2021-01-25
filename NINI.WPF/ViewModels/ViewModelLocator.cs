@@ -31,6 +31,8 @@ namespace NINI.ViewModels
             //containerBuilder.RegisterInstance(SimpleMessenger.Default).As<IMessenger>();
             containerBuilder.RegisterType<NotifyIconViewModel>().AsSelf().SingleInstance();
             containerBuilder.RegisterType<RunViewModel>().AsSelf().SingleInstance();
+            containerBuilder.RegisterType<ToDoCommentViewModel>().AsSelf().SingleInstance();
+            containerBuilder.RegisterType<ToDoListViewModel>().AsSelf().SingleInstance();
 
             _container = containerBuilder.Build();
         }
@@ -51,6 +53,21 @@ namespace NINI.ViewModels
             }
         }
 
+        public ToDoCommentViewModel ToDoCommentVM
+        {
+            get
+            {
+                return _container.Resolve<ToDoCommentViewModel>();
+            }
+        }
+
+        public ToDoListViewModel ToDoListVM
+        {
+            get
+            {
+                return _container.Resolve<ToDoListViewModel>();
+            }
+        }
         //public IOutputDialogService ChangeDirectoryDialogService
         //{
         //    get

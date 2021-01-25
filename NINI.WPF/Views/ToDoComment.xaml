@@ -1,0 +1,41 @@
+﻿<Window x:Class="NINI.Views.ToDoComment"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NINI.Views" xmlns:controls="clr-namespace:NINI.Controls"
+        mc:Ignorable="d"
+        DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}"
+        Title="TodoComment" Height="400" Width="300" Padding="6">
+    <Grid>
+        <Grid x:Name="pnlAdd" Visibility="Collapsed">
+            <Grid.Resources >
+                <Style TargetType="Border">
+                    <Setter Property="Padding" Value="6" />
+                    <Setter Property="Margin" Value="6,6,6,0" />
+                </Style>
+            </Grid.Resources>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"></RowDefinition>
+                <RowDefinition></RowDefinition>
+                <RowDefinition Height="40"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="6"
+                    Grid.Row="0"
+                    >
+                <TextBox BorderThickness="0" x:Name="txtTitle" Text="{Binding Title}" />
+            </Border>
+
+            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="6"
+                    Grid.Row="1"
+                    >
+                <TextBox BorderThickness="0" x:Name="txtComment" Text="{Binding Comment}" TextWrapping="Wrap" AcceptsReturn="True" />
+            </Border> 
+            <Button x:Name="btnAdd" Content="保存" Width="80" Height="30" Grid.Row="2" /> 
+        </Grid>
+
+        <StackPanel>
+            <controls:ToDoList DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}" />
+        </StackPanel>
+    </Grid>
+</Window>
