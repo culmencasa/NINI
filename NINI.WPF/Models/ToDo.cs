@@ -12,7 +12,7 @@ namespace NINI.Models
         public ToDo()
         {
             //Guid = System.Guid.NewGuid().ToString("N");
-            ShowWatermarks = true;
+            ShowWatermarks = false;
         }
 
 
@@ -25,7 +25,6 @@ namespace NINI.Models
             }
             set
             {
-                Set(ref _guid, value);
             }
         }
 

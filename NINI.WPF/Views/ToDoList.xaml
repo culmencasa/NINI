@@ -17,7 +17,17 @@
             </ResourceDictionary.MergedDictionaries>
             <conv:VisibilityBooleanConverter x:Key="VisibilityConverter" />
             <conv:StrikeThroughDecorationConverter x:Key="StrikeThroughDecorationConverter" />
+
+
+            <!--<Style x:Key="favCheckbox" TargetType="{x:Type CheckBox}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate
+                    </Setter.Value>
+                </Setter>
+            </Style>-->
         </ResourceDictionary>
+
     </UserControl.Resources>
     <Grid>
         <ItemsControl x:Name="lstToDo" ItemsSource="{Binding ToDoes}"  FocusManager.IsFocusScope="True" Margin="8,8,0,0">
@@ -38,9 +48,24 @@
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="CheckBox">
-                                                    <Border BorderBrush="Red" BorderThickness="1" Width="16" Height="16" CornerRadius="6">
+                                                    <Grid>
+                                                        <Border Background="Transparent" BorderBrush="Red" BorderThickness="1" Width="16" Height="16" CornerRadius="6">
                                                         
-                                                    </Border>
+                                                        </Border>
+                                                        <Viewbox x:Name="CheckMarker" Visibility="Collapsed" >
+                                                            <Path Stroke="Black" Fill="Black" Data="M506.231,75.508c-7.689-7.69-20.158-7.69-27.849,0l-319.21,319.211L33.617,269.163c-7.689-7.691-20.158-7.691-27.849,0
+			    c-7.69,7.69-7.69,20.158,0,27.849l139.481,139.481c7.687,7.687,20.16,7.689,27.849,0l333.133-333.136
+			    C513.921,95.666,513.921,83.198,506.231,75.508z" />
+                                                        </Viewbox>
+                                                    </Grid>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsChecked" Value="True">
+                                                            <Setter TargetName="CheckMarker" Property="Visibility" Value="Visible" />
+                                                        </Trigger>
+                                                        <Trigger Property="IsChecked" Value="False">
+                                                            <Setter TargetName="CheckMarker" Property="Visibility" Value="Collapsed" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>

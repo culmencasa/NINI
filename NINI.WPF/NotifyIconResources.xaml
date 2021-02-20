@@ -9,7 +9,7 @@
     <tb:TaskbarIcon
         x:Key="MyNotifyIcon"
         TrayLeftMouseDown="TrayLeftMouseDownHandler"
-        
+        FocusManager.IsFocusScope="True"
         IconSource="/Icons/Jazz.ico"
         MenuActivation="RightClick"
         PopupActivation="DoubleClick"
@@ -31,13 +31,13 @@
 
                 <Separator />
 
-                <MenuItem Command="{Binding }" Header="Run">
+                <MenuItem Command="{Binding RunDialogCommand}" Header="运行(_R)">
 
                 </MenuItem>
-                <MenuItem Command="{Binding }" Header="This Computer">
+                <MenuItem Command="{Binding ThisComputerCommand}" Header="我的电脑(_E)">
 
                 </MenuItem>
-                <MenuItem Command="{Binding }" Header="关机">
+                <MenuItem Command="{Binding ShutDownPCCommand}" Header="关机">
                     
                 </MenuItem>
                 

@@ -31,6 +31,14 @@
       <Lcid>0</Lcid>
       <Isolated>false</Isolated>
     </COMReference>
+    <COMReference Include="Shell32.dll">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>50a7e9b0-70ef-11d1-b75a-00a0c90564fe</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+    </COMReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +58,12 @@
     <Resource Include="Icons\Jazz.ico" />
     <Resource Include="Icons\aim_offline.ico" />
     <Resource Include="Icons\tool_timer.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\shutdown.vbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

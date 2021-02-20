@@ -3,6 +3,7 @@ using NINI.Helper;
 using NINI.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -26,9 +27,12 @@ namespace NINI.ViewModels
             SyncTimeCommand = new RelayCommand(SyncTimeCommandAction);
             ExitCommand = new RelayCommand(ExitCommandAction);
             OpenMainWindowCommand = new RelayCommand(OpenMainWindowAcion);
-
+            ThisComputerCommand = new RelayCommand(ThisComputerAction);
+            RunDialogCommand = new RelayCommand(RunDialogAction);
+            ShutDownPCCommand = new RelayCommand(ShutDownPCAction);
             //SimpleMessenger.Default.Subscribe<NotifyIconViewMessage>(this, HandleMainViewMessage);
         }
+
 
 
         #region Actions for Commands, Messages
@@ -71,6 +75,31 @@ namespace NINI.ViewModels
             });
         }
 
+        [STAThread]
+        private void RunDialogAction()
+        {
+            // Microsoft Shell Controls and Automation
+            Shell32.Shell shell = new Shell32.Shell();
+            shell.FileRun();
+        }
+
+        private void ThisComputerAction()
+        {
+            System.Diagnostics.Process.Start("explorer.exe", "");
+        }
+
+
+        private void ShutDownPCAction()
+        {
+            string fileName = System.Environment.GetFolderPath(Environment.SpecialFolder.System) + "\\wscript.exe";
+
+            string argument = AppDomain.CurrentDomain.BaseDirectory + "Resources\\shutdown.vbs";
+
+            if (File.Exists(fileName) && File.Exists(argument))
+            {
+                System.Diagnostics.Process.Start(fileName, argument);
+            }
+        }
 
         #endregion
 
@@ -158,6 +187,11 @@ namespace NINI.ViewModels
         public ICommand ExitCommand { get; set; }
         public ICommand OpenMainWindowCommand { get; private set; }
 
+        public ICommand ThisComputerCommand { get; set; }
+
+        public ICommand RunDialogCommand { get; set; }
+
+        public ICommand ShutDownPCCommand { get; set; }
 
         #endregion
 
