@@ -1,9 +1,11 @@
 ﻿using Microsoft.Win32;
 using Microsoft.Win32.TaskScheduler;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Shapes;
+using Utils.Misc;
 
 namespace Installer
 {
@@ -15,7 +17,7 @@ namespace Installer
         public MainWindow()
         {
             InitializeComponent();
-            
+
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -38,17 +40,18 @@ namespace Installer
                 Directory.CreateDirectory(installPath);
             }
 
-            // copy files(can't be done in single-file-publish mode)
-            DirectoryInfo di = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
-            foreach (var file in di.GetFileSystemInfos())
+            string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
+            foreach (string file in GetFiles())
             {
-                if (file.Extension == ".pdb")
-                    continue;
-
-                File.Copy(file.FullName, System.IO.Path.Combine(installPath, file.Name), true);
+                string sourceFileName = System.IO.Path.Combine(sourcePath, file);
+                string destFileName = System.IO.Path.Combine(installPath, file);
+                string destPath = destFileName.Substring(0, destFileName.LastIndexOf("\\"));
+                if (!Directory.Exists(destPath))
+                {
+                    Directory.CreateDirectory(destPath);
+                }
+                File.Copy(sourceFileName, destFileName, true);
             }
-
-             
 
             // setup parameters for the logon scheduler task.
             string taskName = "NINITray";
@@ -92,6 +95,26 @@ namespace Installer
 
             MessageBox.Show("Install completed.");
             Application.Current.Shutdown();
+        }
+
+
+        private IList<string> GetFiles()
+        {
+            List<string> files = new List<string>();
+            using (StreamReader sr = new StreamReader("manifest.txt"))
+            {
+                string line;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line.Length > 0)
+                    {
+                        files.Add(line);
+                    }
+                }
+            }
+
+            return files;
         }
     }
 }

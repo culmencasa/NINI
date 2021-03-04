@@ -1,0 +1,3 @@
+﻿Installer.exe
+NINI.exe
+Resources\shutdown.vbs

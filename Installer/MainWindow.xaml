@@ -27,6 +27,7 @@
         <ProgressBar
             x:Name="pbPercent"
             Height="10"
+            BorderThickness="0"
             VerticalAlignment="Bottom" />
     </Grid>
 </Window>

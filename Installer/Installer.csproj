@@ -9,13 +9,28 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="TaskScheduler" Version="2.8.18" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Utils.Misc\Utils.Misc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Resources\icons8-herb-48.png" />
     <Resource Include="Resources\icons8-spider-web-48.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="manifest.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

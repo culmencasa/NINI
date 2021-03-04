@@ -14,4 +14,26 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Forms\**" />
+    <EmbeddedResource Remove="Forms\**" />
+    <None Remove="Forms\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Forms\ClassStyles.cs" />
+    <Compile Include="Forms\MINMAXINFO.cs" />
+    <Compile Include="Forms\MONITORINFO.cs" />
+    <Compile Include="Forms\POINT.cs" />
+    <Compile Include="Forms\RECT.cs" />
+    <Compile Include="Forms\ShowWindowCommands.cs" />
+    <Compile Include="Forms\Win32.cs" />
+    <Compile Include="Forms\Win32Core.cs" />
+    <Compile Include="Forms\Win32Kernel.cs" />
+    <Compile Include="Forms\Win32User.cs" />
+    <Compile Include="Forms\WindowStyles.cs" />
+    <Compile Include="Forms\WindowStylesEx.cs" />
+    <Compile Include="Forms\WNDCLASS.cs" />
+  </ItemGroup>
+
 </Project>
