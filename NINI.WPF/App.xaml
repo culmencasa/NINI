@@ -9,8 +9,8 @@
 
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="NotifyIconResources.xaml" /> 
-                <ResourceDictionary Source="Themes/ScrollBar.xaml" /> 
+                <ResourceDictionary Source="NotifyIconResources.xaml" />
+                <ResourceDictionary Source="Themes/ScrollBar.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <viewmodels:ViewModelLocator x:Key="Locator" />
