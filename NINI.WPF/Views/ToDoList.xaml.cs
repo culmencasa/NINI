@@ -1,7 +1,11 @@
 ﻿using NINI.Controls;
+using NINI.Helper;
 using NINI.Models;
 using NINI.ViewModels;
 using System;
+using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -80,5 +84,7 @@ namespace NINI.Views
                 vm.Giveup(item);
             }
         }
+
+
     }
 }

@@ -1,3 +1,4 @@
 ﻿Installer.exe
 NINI.exe
+NINI.Console.exe
 Resources\shutdown.vbs

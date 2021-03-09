@@ -4,6 +4,7 @@ using NINI.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -38,6 +39,10 @@ namespace NINI
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            //runWindow = new RunWindow();
+            //runWindow.ShowDialog();
+
+
         }
 
 
@@ -45,11 +50,8 @@ namespace NINI
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (runWindow == null)
-            {
-                runWindow = new RunWindow();
-            }
 
+            Process.Start("NINI.Normal.exe");
 
             //pageTransition.ShowPage(runWindow);
         }

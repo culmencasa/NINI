@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Remove="Icons\Jazz.ico" />
     <None Remove="Images\aim_offline.ico" />
+    <None Remove="Images\dragbar.png" />
     <None Remove="Images\tool_timer.ico" />
   </ItemGroup>
 
@@ -58,6 +59,7 @@
     <Resource Include="Icons\Jazz.ico" />
     <Resource Include="Icons\aim_offline.ico" />
     <Resource Include="Icons\tool_timer.ico" />
+    <Resource Include="Images\dragbar.png" />
   </ItemGroup>
 
   <ItemGroup>

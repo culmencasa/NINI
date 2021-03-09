@@ -23,11 +23,28 @@ namespace NINI
     /// </summary>
     public partial class RunWindow
     {
+
+        private const uint WM_DROPFILES = 0x233;
+        private const uint WM_COPYDATA = 0x004A;
+        private const uint WM_COPYGLOBALDATA = 0x0049;
+        private const uint MSGFLT_ADD = 1;
+
+
         public RunWindow()
         {
             InitializeComponent();
             Loaded += RunWindow_Loaded;
+
+            ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
+            ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
+            ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "ChangeWindowMessageFilter")]
+        public extern static bool ChangeWindowMessageFilter(
+ uint message,
+ uint dwFlag
+);
 
         private void RunWindow_Loaded(object sender, RoutedEventArgs e)
         {

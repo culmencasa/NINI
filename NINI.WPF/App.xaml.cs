@@ -35,7 +35,7 @@ namespace NINI
 
         #region 常量
 
-        public const string APP_NAME = "NINI.WPF";
+        public const string APP_NAME = "NINI";
 
         #endregion
 
@@ -84,11 +84,11 @@ namespace NINI
 
             #region 管理员启动
 
-            if (!IsAdministrator())
-            {
-                RunThisAsAdmin();
-                return;
-            }
+            //if (!IsAdministrator())
+            //{
+            //    RunThisAsAdmin();
+            //    return;
+            //}
 
             #endregion
 
@@ -112,9 +112,11 @@ namespace NINI
                 Parameter = "Slient"
             });
 
-            PreloadTodoWindow();
+            //PreloadTodoWindow();
 
-            WindowManager.Single<ToDoComment>().Show();
+            //WindowManager.Single<ToDoComment>().Show();
+
+            
 
             //todoProcess = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "TodoApp\\TodoApp.exe");
 

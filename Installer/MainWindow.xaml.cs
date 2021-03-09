@@ -32,7 +32,8 @@ namespace Installer
             string folderName = "NINI";
             string installPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), folderName);
             string fileName = "NINI.exe";
-            string destFullPath = System.IO.Path.Combine(installPath, fileName);
+            string schedulerTaskFile = "NINI.Header.exe";
+            string schedulerTaskFullPath = System.IO.Path.Combine(installPath, schedulerTaskFile);
 
             // create directory
             if (!Directory.Exists(installPath))
@@ -55,7 +56,7 @@ namespace Installer
 
             // setup parameters for the logon scheduler task.
             string taskName = "NINITray";
-            string taskFile = destFullPath;
+            string taskFile = schedulerTaskFullPath;
             string taskDir = installPath;
 
             // create a scheduler task
@@ -82,7 +83,7 @@ namespace Installer
                 td.Settings.ExecutionTimeLimit = TimeSpan.Zero; //never                
 
                 td.RegistrationInfo.Author = "culmencasa";
-                td.RegistrationInfo.Description = "a simple tray does little thing";
+                td.RegistrationInfo.Description = "do small things";
                 td.RegistrationInfo.Documentation = "try to make something useful";
 
                 ts.RootFolder.RegisterTaskDefinition(taskName, td);

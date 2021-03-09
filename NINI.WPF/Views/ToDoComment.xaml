@@ -1,55 +1,131 @@
-﻿<Window x:Class="NINI.Views.ToDoComment"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NINI.Views" 
-        mc:Ignorable="d"
-        DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}"
-        Title="TodoComment" Height="400" Width="300" Padding="6">
+﻿<Window
+    x:Class="NINI.Views.ToDoComment"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:NINI.Views"
+    mc:Ignorable="d"
+    DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}"
+    Title="TodoComment"
+    Height="400"
+    Width="300"
+    Padding="6">
+    <Window.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary
+                Source="pack://application:,,,/NINI;component/Themes/RoundButtonStyle.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+
+
+            <Style
+                x:Key="WhiteButton"
+                TargetType="Button"
+                BasedOn="{StaticResource RoundButtonStyle}">
+                <Setter
+                    Property="Background"
+                    Value="White" />
+                <Setter
+                    Property="MinHeight"
+                    Value="16" />
+                <Setter
+                    Property="MinWidth"
+                    Value="16" />
+                <Setter
+                    Property="FontSize"
+                    Value="13" />
+                <Setter
+                    Property="Foreground"
+                    Value="#3575F6" />
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition
+                Height="*" />
+            <RowDefinition
+                Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid x:Name="pnlAdd" Visibility="Collapsed">
-            <Grid.Resources >
-                <Style TargetType="Border">
-                    <Setter Property="Padding" Value="6" />
-                    <Setter Property="Margin" Value="6,6,6,0" />
+        <Grid
+            x:Name="pnlAdd"
+            Visibility="Collapsed">
+            <Grid.Resources>
+                <Style
+                    TargetType="Border">
+                    <Setter
+                        Property="Padding"
+                        Value="6" />
+                    <Setter
+                        Property="Margin"
+                        Value="6,6,6,0" />
                 </Style>
             </Grid.Resources>
             <Grid.RowDefinitions>
-                <RowDefinition Height="40"></RowDefinition>
+                <RowDefinition
+                    Height="40"></RowDefinition>
                 <RowDefinition></RowDefinition>
-                <RowDefinition Height="40"></RowDefinition>
+                <RowDefinition
+                    Height="40"></RowDefinition>
             </Grid.RowDefinitions>
-            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="6"
-                    Grid.Row="0"
-                    >
-                <TextBox BorderThickness="0" x:Name="txtTitle" Text="{Binding Title}" />
+            <Border
+                BorderThickness="1"
+                BorderBrush="Gray"
+                CornerRadius="4"
+                Padding="6"
+                Grid.Row="0">
+                <TextBox
+                    BorderThickness="0"
+                    x:Name="txtTitle"
+                    Text="{Binding Title}" />
             </Border>
 
-            <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="6"
-                    Grid.Row="1"
-                    >
-                <TextBox BorderThickness="0" x:Name="txtComment" Text="{Binding Comment}" TextWrapping="Wrap" AcceptsReturn="True" />
-            </Border> 
-            <Button x:Name="btnAdd" Content="保存" Width="80" Height="30" Grid.Row="2" /> 
+            <Border
+                BorderThickness="1"
+                BorderBrush="Gray"
+                CornerRadius="4"
+                Padding="6"
+                Grid.Row="1">
+                <TextBox
+                    BorderThickness="0"
+                    x:Name="txtComment"
+                    Text="{Binding Comment}"
+                    TextWrapping="Wrap"
+                    AcceptsReturn="True" />
+            </Border>
+            <Button
+                x:Name="btnAdd"
+                Content="保存"
+                Width="80"
+                Height="30"
+                Grid.Row="2" />
         </Grid>
 
-        <local:ToDoList DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}" />
+        <local:ToDoList
+            DataContext="{Binding ToDoListVM, Source={StaticResource Locator}}" />
 
 
-        <Grid VerticalAlignment="Bottom" Height="50" Grid.Row="1">
+        <Grid
+            VerticalAlignment="Bottom"
+            Height="50"
+            Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition
+                    Width="Auto" />
             </Grid.ColumnDefinitions>
 
 
-            <TextBox Grid.Column="0" />
-            <Button x:Name="btnAddToDo" Content="添加" Width="60" Grid.Column="1" />
+            <Button
+                x:Name="btnAddToDo"
+                Style="{StaticResource WhiteButton}"
+                Content="添加"
+                Width="60"
+                Height="30"
+                Grid.Column="1">
+                
+            </Button>
 
 
         </Grid>

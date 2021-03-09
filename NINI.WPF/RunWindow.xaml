@@ -1,4 +1,4 @@
-﻿<UserControl  x:Class="NINI.RunWindow" xmlns:nini="clr-namespace:NINI"  
+﻿<Window  x:Class="NINI.RunWindow" xmlns:nini="clr-namespace:NINI"  
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,10 +6,19 @@
         xmlns:local="clr-namespace:NINI"
                     xmlns:dd="urn:gong-wpf-dragdrop"
         DataContext="{Binding RunVM, Source={StaticResource Locator}}"
-        mc:Ignorable="d" 
-              Height="450" Width="800">
+        mc:Ignorable="d"
+    AllowDrop="True"
+    Background="Red"
+    Height="450" Width="800">
 
-    <Border >
+    <Grid>
+    <StackPanel
+        AllowDrop="True" 
+        Height="100"
+        Background="Yellow">
+        
+    </StackPanel>
+    <Border Height="50" Background="Green" >
         <Grid>
             <ListView ItemsSource="{Binding Datas}"
          dd:DragDrop.IsDragSource="True"
@@ -45,4 +54,5 @@
             </ListView>
         </Grid>
     </Border>
-</UserControl>
+    </Grid>
+</Window>

@@ -13,6 +13,9 @@
     <Page Update="RunWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Themes\RoundButtonStyle.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="TodoWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
