@@ -1,5 +1,5 @@
 ﻿<Window
-    x:Class="Installer.MainWindow"
+    x:Class="Installer.InstallWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,9 +12,25 @@
     mc:Ignorable="d">
     <Grid>
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
             <Image Source="pack://application:,,,/Installer;Component/Resources/icons8-herb-48.png" Stretch="None" />
             <TextBlock Height="10" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition
+                        Width="30" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="txtInstallPath" />
+                <Button
+                    Content="..."
+                    Grid.Column="2"
+                    Click="btnSelectInstallPath_Click" />
+            </Grid>
             <CheckBox IsChecked="True">Run at startup</CheckBox>
             <TextBlock Height="10" />
             <Button

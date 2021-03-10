@@ -27,19 +27,15 @@ namespace NINI
     /// </summary>
     public partial class App : Application
     {
-
         public App()
         { 
         }
-
 
         #region 常量
 
         public const string APP_NAME = "NINI";
 
         #endregion
-
-
 
         /// <summary>
         /// Http服务
@@ -59,7 +55,6 @@ namespace NINI
 
         protected override void OnStartup(StartupEventArgs e)
         {
-
             base.OnStartup(e);
 
             #region 唯一实例判断
@@ -68,22 +63,60 @@ namespace NINI
             _ = new Mutex(false, APP_NAME, out isFirstSyncElement);
             if (isFirstSyncElement == false)
             {
+                App.Current.Shutdown();
+                Environment.Exit(0);
+                return;
+            }
+            else
+            {
                 Process SameAppProc = GetProcInstance();
                 if (SameAppProc != null)
                 {
                     // 如果找到已有的实例则前置
                     //Win32.SetForegroundWindow(SameAppProc.MainWindowHandle);
+
+                    // MessageBox.Show("程序已启动.");
+
+                    App.Current.Shutdown();
+                    Environment.Exit(0);
+                    return;
                 }
 
-                App.Current.Shutdown();
-                Environment.Exit(0);
-                return;
             }
+
 
             #endregion
 
-            #region 管理员启动
+            #region 如果守护进程未启动, 则以管理员启动
 
+            //Debugger.Launch();
+
+            string consoleProcessName = "NINI.Console";
+            string consoleService = AppDomain.CurrentDomain.BaseDirectory + $"{consoleProcessName}.exe";
+            if (File.Exists(consoleService))
+            {
+                if (Process.GetProcessesByName(consoleProcessName).Length == 0)
+                {
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = consoleService;
+                    startInfo.Arguments = " start";
+                    startInfo.Verb = "runas"; // 以管理员身份运行
+                    startInfo.UseShellExecute = true;
+                    startInfo.CreateNoWindow = true;
+
+                    Process processTemp = new Process();
+                    processTemp.StartInfo = startInfo;
+                    processTemp.EnableRaisingEvents = true;
+                    try
+                    {
+                        processTemp.Start();
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
             //if (!IsAdministrator())
             //{
             //    RunThisAsAdmin();
@@ -265,10 +298,13 @@ namespace NINI
             {
                 if (process.Id != current.Id)
                 {
-                    if (current.MainModule.FileName == Assembly.GetExecutingAssembly().Location.Replace("/", "\\"))
-                    {
-                        return process;
-                    }
+                    //注释: core程序不能这样判断相同路径(GetExecutingAssembly()有可能是dll而不是exe)
+                    //if (current.MainModule.FileName == Assembly.GetExecutingAssembly().Location.Replace("/", "\\"))
+                    //{
+                    //    return process;
+                    //}
+
+                    return process;
                 }
             }
             return null;

@@ -2,6 +2,7 @@
 using Microsoft.Win32.TaskScheduler;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Shapes;
@@ -9,48 +10,93 @@ using Utils.Misc;
 
 namespace Installer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public partial class InstallWindow : Window
     {
-        public MainWindow()
+        public InstallWindow()
         {
             InitializeComponent();
 
+            string defaultFolderName = "NINI";
+            string defaultInstallPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), defaultFolderName);
+
+            InstallPath = defaultInstallPath;
         }
 
+        public string InstallPath
+        {
+            get
+            {
+                return txtInstallPath.Text;
+            }
+            set
+            {
+                txtInstallPath.Text = value;
+            }
+        }
+
+        private void btnSelectInstallPath_Click(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "选择安装目标文件夹",
+                UseDescriptionForTitle = true,  
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                this.InstallPath = dialog.SelectedPath;
+            }
+        }
+
+        // 点击Install按钮
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
+
             // check integrity
-            if (!File.Exists("NINI.exe"))
+            foreach (string file in GetFiles())
             {
-                MessageBox.Show("NINI.exe File not found.");
-                return;
+                string sourceFileName = System.IO.Path.Combine(sourcePath, file);
+                if (!File.Exists(sourceFileName))
+                {
+                    MessageBox.Show("缺少文件:" + file, "错误", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                    return;
+                }
             }
 
-            string folderName = "NINI";
-            string installPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), folderName);
-            string fileName = "NINI.exe";
-            string schedulerTaskFile = "NINI.Header.exe";
+            string installPath = this.InstallPath;
+            string schedulerTaskFile = "NINI.exe";
             string schedulerTaskFullPath = System.IO.Path.Combine(installPath, schedulerTaskFile);
 
             // create directory
             if (!Directory.Exists(installPath))
             {
-                Directory.CreateDirectory(installPath);
+                try
+                {
+                    Directory.CreateDirectory(installPath);
+                }
+                catch (System.UnauthorizedAccessException)
+                {
+                    MessageBox.Show("请使用管理员身份运行.");
+                    return;
+                }
             }
 
-            string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
             foreach (string file in GetFiles())
             {
+                // 源文件全路径
                 string sourceFileName = System.IO.Path.Combine(sourcePath, file);
+                // 目标文件全路径(目标路径+相对路径文件名)
                 string destFileName = System.IO.Path.Combine(installPath, file);
+
+                // 创建子文件夹
                 string destPath = destFileName.Substring(0, destFileName.LastIndexOf("\\"));
                 if (!Directory.Exists(destPath))
                 {
                     Directory.CreateDirectory(destPath);
                 }
+
+                // 复制文件
                 File.Copy(sourceFileName, destFileName, true);
             }
 
@@ -60,6 +106,8 @@ namespace Installer
             string taskDir = installPath;
 
             // create a scheduler task
+            #region 计划任务
+
             using (TaskService ts = new TaskService())
             {
                 Task t = ts.GetTask(taskName);
@@ -74,7 +122,7 @@ namespace Installer
                 td.Actions.Add(new ExecAction(taskFile, taskDir));
                 td.Principal.RunLevel = TaskRunLevel.Highest;
                 td.Settings.WakeToRun = false;
-                td.Settings.RunOnlyIfNetworkAvailable = false; 
+                td.Settings.RunOnlyIfNetworkAvailable = false;
                 td.Settings.StopIfGoingOnBatteries = false;
                 td.Settings.AllowHardTerminate = true;
                 td.Settings.DisallowStartIfOnBatteries = false;
@@ -88,6 +136,20 @@ namespace Installer
 
                 ts.RootFolder.RegisterTaskDefinition(taskName, td);
             }
+
+            #endregion
+
+            #region 守护进程
+
+            string consoleFileName = "NINI.Console.exe";
+            string consoleFullPath = System.IO.Path.Combine(installPath, consoleFileName);
+
+            if (File.Exists(consoleFullPath))
+            {
+                Process.Start(consoleFullPath, new[] { "install" }).WaitForExit();
+            }
+
+            #endregion
 
             this.pbPercent.Value = pbPercent.Maximum;
 
@@ -117,5 +179,6 @@ namespace Installer
 
             return files;
         }
+
     }
 }

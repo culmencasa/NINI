@@ -11,25 +11,25 @@ namespace NINI.Console
     {
         internal static void Configure()
         {
-            var rc = HostFactory.Run(host =>                                    // 1
+            var rc = HostFactory.Run(host =>                                    
             {
-                host.Service<Stub>(service =>                   // 2
+                host.Service<Stub>(service =>                   
                 {
-                    service.ConstructUsing(() => new Stub());   // 3
-                    service.WhenStarted(s => s.Start());                        // 4
-                    service.WhenStopped(s => s.Stop());                         // 5
+                    service.ConstructUsing(() => new Stub());   
+                    service.WhenStarted(s => s.Start());                        
+                    service.WhenStopped(s => s.Stop());                         
                 });
 
-                host.RunAsLocalSystem();                                        // 6
+                host.RunAsLocalSystem();                                        
 
-                host.EnableServiceRecovery(service =>                           // 7
+                host.EnableServiceRecovery(service =>                           
                 {
-                    service.RestartService(3);                                  // 8
+                    service.RestartService(3);                                  
                 });
-                host.SetDescription("Windows service based on topshelf");       // 9
-                host.SetDisplayName("Topshelf demo service");                   // 10
-                host.SetServiceName("TopshelfDemoService");                     // 11
-                host.StartAutomaticallyDelayed();                               // 12
+                host.SetDescription("守护进程, 提升主程序权限.");       
+                host.SetDisplayName("NINI Console Service");                   
+                host.SetServiceName("NINIConsoleService");                     
+                host.StartAutomaticallyDelayed();                               
             });
 
             var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());       // 13

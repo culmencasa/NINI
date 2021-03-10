@@ -20,11 +20,14 @@ namespace Installer
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+
+#if !DEBUG
             if (!IsAdministrator())
             {
                 RunThisAsAdmin();
                 return;
             }
+#endif
 
             bool uninstall = false;
             if (e.Args != null && e.Args.Length > 0)
@@ -47,20 +50,20 @@ namespace Installer
             }
             else
             {
-                new MainWindow().ShowDialog();
+                new InstallWindow().ShowDialog();
             }
             Environment.Exit(0);
         }
 
 
-        private static bool IsAdministrator()
+        public static bool IsAdministrator()
         {
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        private static void RunThisAsAdmin()
+        public static void RunThisAsAdmin()
         {
             if (!IsAdministrator())
             {

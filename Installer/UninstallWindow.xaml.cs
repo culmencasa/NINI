@@ -26,6 +26,21 @@ namespace Installer
             // 1.kill process of tray program
             KillProcesses("NINI");
 
+            string installPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            #region 卸载守护进程
+
+            string consoleFileName = "NINI.Console.exe";
+            string consoleFullPath = System.IO.Path.Combine(installPath, consoleFileName);
+
+            if (File.Exists(consoleFullPath))
+            {
+                Process.Start(consoleFullPath, new[] { "uninstall" }).WaitForExit();
+            }
+
+            #endregion
+
+
             // 2.delete a scheduler task
             string taskName = "NINITray";
             using (TaskService ts = new TaskService())
@@ -38,7 +53,6 @@ namespace Installer
             }
 
             // 3.get user install path
-            string installPath = AppDomain.CurrentDomain.BaseDirectory;
             try
             {
                 string regPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\NINI").GetValue("Path").ToString();
@@ -89,9 +103,12 @@ namespace Installer
         }
 
 
+        /// <summary>
+        /// 使用控制台命令清理安装残余文件
+        /// </summary>
+        /// <param name="installPath"></param>
         private void DeleteItselfByCMD(string installPath)
         {
-
             string[] remnants = new string[] {
                 System.IO.Path.Combine(installPath, "Installer.exe"),
                 System.IO.Path.Combine(installPath, "Installer.dll"),
