@@ -3,20 +3,12 @@ using MVVMLib;
 using NINI.Helper;
 using NINI.Models;
 using NINI.ViewModels;
-using NINI.Views;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Security.Principal;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -27,32 +19,16 @@ namespace NINI
     /// </summary>
     public partial class App : Application
     {
+        #region Application成员
+
         public App()
         { 
         }
 
-        #region 常量
-
-        public const string APP_NAME = "NINI";
-
-        #endregion
-
         /// <summary>
-        /// Http服务
+        /// 程序启动
         /// </summary>
-        public SimpleHttpServer HttpServer { get; private set; }
-
-
-
-        private TaskbarIcon notifyIcon;
-        private ViewModelLocator locator;
-        private Process todoProcess;
-
-
-
-        private KeyboardHook hook = new KeyboardHook();
-         
-
+        /// <param name="e"></param>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -60,7 +36,7 @@ namespace NINI
             #region 唯一实例判断
 
             bool isFirstSyncElement;
-            _ = new Mutex(false, APP_NAME, out isFirstSyncElement);
+            _ = new Mutex(false, AppConst.APP_NAME, out isFirstSyncElement);
             if (isFirstSyncElement == false)
             {
                 App.Current.Shutdown();
@@ -69,7 +45,7 @@ namespace NINI
             }
             else
             {
-                Process SameAppProc = GetProcInstance();
+                Process SameAppProc = GetAppProcess();
                 if (SameAppProc != null)
                 {
                     // 如果找到已有的实例则前置
@@ -89,34 +65,7 @@ namespace NINI
 
             #region 如果守护进程未启动, 则以管理员启动
 
-            //Debugger.Launch();
-
-            string consoleProcessName = "NINI.Console";
-            string consoleService = AppDomain.CurrentDomain.BaseDirectory + $"{consoleProcessName}.exe";
-            if (File.Exists(consoleService))
-            {
-                if (Process.GetProcessesByName(consoleProcessName).Length == 0)
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo();
-                    startInfo.FileName = consoleService;
-                    startInfo.Arguments = " start";
-                    startInfo.Verb = "runas"; // 以管理员身份运行
-                    startInfo.UseShellExecute = true;
-                    startInfo.CreateNoWindow = true;
-
-                    Process processTemp = new Process();
-                    processTemp.StartInfo = startInfo;
-                    processTemp.EnableRaisingEvents = true;
-                    try
-                    {
-                        processTemp.Start();
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
-                }
-            }
+            StartConsoleService();
             //if (!IsAdministrator())
             //{
             //    RunThisAsAdmin();
@@ -125,8 +74,7 @@ namespace NINI
 
             #endregion
 
-            notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
-            locator = (ViewModelLocator)FindResource("Locator");
+            _notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
 
 
             //Start HttpServer
@@ -168,28 +116,28 @@ namespace NINI
 
 
 
-            hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            _hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
             try
             {
-                hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
+                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
             }
             catch
             {
-                notifyIcon?.ShowBalloonTip(DateTime.Now.ToShortTimeString(), "快捷键注册失败", BalloonIcon.Info);
+                _notifyIcon?.ShowBalloonTip(DateTime.Now.ToShortTimeString(), "快捷键注册失败", BalloonIcon.Info);
             }
 
         }
 
-
-        
-
-
+        /// <summary>
+        /// 程序退出
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnExit(ExitEventArgs e)
         {
-            todoProcess?.Kill();
+            _todoProcess?.Kill();
 
             SimpleMessenger.Default.Unsubscribe(this);
-            notifyIcon?.Dispose();
+            _notifyIcon?.Dispose();
             base.OnExit(e);
 
 
@@ -200,12 +148,55 @@ namespace NINI
             WindowManager.CloseAll();
         }
 
+        #endregion
+
+        #region 静态
+
+        public static App Instance
+        {
+            get
+            {
+                return (App)Current;
+            }
+        }
+        #endregion
+
+        #region 私有字段
+
+        private TaskbarIcon _notifyIcon;
+        private Process _todoProcess;
+        private KeyboardHook _hook = new KeyboardHook();
+
+        #endregion
+
+        #region 属性
+
+        /// <summary>
+        /// Http服务
+        /// </summary>
+        public SimpleHttpServer HttpServer { get; private set; }
+
+        #endregion
+
+        #region 事件处理
+
+        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            Process p = new Process();
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.Verb = "runas";
+            p.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            p.StartInfo.FileName = "cmd";
+            p.StartInfo.Arguments = "";
+            p.Start();
+        }
+
         private void HandleGeneralMessage(GeneralMessage msg)
         {
             switch (msg.Signal)
             {
                 case GeneralMessage.Types.ShowBallon:
-                    notifyIcon?.ShowBalloonTip(msg.Title, msg.Content, BalloonIcon.Info);
+                    _notifyIcon?.ShowBalloonTip(msg.Title, msg.Content, BalloonIcon.Info);
                     break;
                 default:
                     break;
@@ -248,6 +239,10 @@ namespace NINI
             }
         }
 
+        #endregion
+
+        #region 私有方法
+
         /// <summary>
         /// 重新以管理员身份运行
         /// </summary>
@@ -289,7 +284,7 @@ namespace NINI
         /// 获取程序的进程
         /// </summary>
         /// <returns></returns>
-        public Process GetProcInstance()
+        private Process GetAppProcess()
         {
             Process current = Process.GetCurrentProcess();
             Process[] processes = Process.GetProcessesByName(current.ProcessName);
@@ -310,17 +305,6 @@ namespace NINI
             return null;
         }
 
-
-        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
-        {
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.Verb = "runas";
-            p.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            p.StartInfo.FileName = "cmd";
-            p.StartInfo.Arguments = "";
-            p.Start();
-        }
 
         /// <summary>
         /// 预加载Todo窗体
@@ -363,5 +347,85 @@ namespace NINI
             preloadWaiter.Start();
         }
 
+        #endregion
+
+        #region 公开方法
+
+
+        /// <summary>
+        /// 杀掉进程
+        /// </summary>
+        /// <param name="processName">进程名</param>
+        public void KillProcesses(string processName)
+        {
+            Process[] processes = Process.GetProcessesByName(processName);
+
+            foreach (Process process in processes)
+            {
+                process.Kill();
+            }
+        }
+
+        public void StartConsoleService()
+        {
+            string consoleProcessName = AppConst.CONSOLE_PROCESS_NAME;
+            string consoleService = AppDomain.CurrentDomain.BaseDirectory + $"{consoleProcessName}.exe";
+            if (File.Exists(consoleService))
+            {
+                if (Process.GetProcessesByName(consoleProcessName).Length == 0)
+                {
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = consoleService;
+                    startInfo.Arguments = " start";
+                    startInfo.Verb = "runas"; // 以管理员身份运行
+                    startInfo.UseShellExecute = true;
+                    startInfo.CreateNoWindow = true;
+
+                    Process processTemp = new Process();
+                    processTemp.StartInfo = startInfo;
+                    processTemp.EnableRaisingEvents = true;
+                    try
+                    {
+                        processTemp.Start();
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+        public void StopConsoleService()
+        {
+            string consoleProcessName = AppConst.CONSOLE_PROCESS_NAME;
+            string consoleService = AppDomain.CurrentDomain.BaseDirectory + $"{consoleProcessName}.exe";
+            if (File.Exists(consoleService))
+            {
+                if (Process.GetProcessesByName(consoleProcessName).Length > 0)
+                {
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = consoleService;
+                    startInfo.Arguments = " stop";
+                    startInfo.Verb = "runas"; // 以管理员身份运行
+                    startInfo.UseShellExecute = true;
+                    startInfo.CreateNoWindow = true;
+
+                    Process processTemp = new Process();
+                    processTemp.StartInfo = startInfo;
+                    processTemp.EnableRaisingEvents = true;
+                    try
+                    {
+                        processTemp.Start();
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+
+        #endregion
     }
 }

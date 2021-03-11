@@ -68,8 +68,4 @@
     </None>
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy $(SolutionDir)libs\*.* $(OutDir) /y" />
-  </Target>
-
 </Project>

@@ -29,6 +29,8 @@ namespace Installer
         /// <param name="e"></param>
         private void btnReinstall_Click(object sender, RoutedEventArgs e)
         {
+            Debugger.Launch();
+
             string installPath = null;
 
             //1.获取安装路径
@@ -45,42 +47,43 @@ namespace Installer
                 {
                     // 获取程序安装路径失败, 使用默认路径. 
                     installPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Const.AppName);
-
-                    // 判断安装程序的位置, 如果与目标位置不一致. 则复制到目标位置. 
-                    string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
-                    if (new Uri(installPath) == new Uri(sourcePath))
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        // 复制文件, 不检查完整性
-                        foreach (string file in GetFiles())
-                        {
-                            string sourceFileName = System.IO.Path.Combine(sourcePath, file);
-                            string destFileName = System.IO.Path.Combine(installPath, file);
-
-                            // 创建子文件夹
-                            string destPath = destFileName.Substring(0, destFileName.LastIndexOf("\\"));
-                            if (!Directory.Exists(destPath))
-                            {
-                                Directory.CreateDirectory(destPath);
-                            }
-
-                            // 复制文件
-                            if (File.Exists(sourceFileName))
-                            {
-                                File.Copy(sourceFileName, destFileName, true);
-                            }
-                        }
-                    }
-                    return;
+                     
                 }
             }
             catch { }
 
 
-            // 2.修复自启动
+            // 2.判断安装程序的位置, 如果与目标位置不一致. 则重新复制文件到目标位置. 
+            string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
+            if (new Uri(installPath) == new Uri(sourcePath))
+            {
+                return;
+            }
+            else
+            {
+                // 复制文件, 不检查完整性
+                foreach (string file in GetFiles())
+                {
+                    string sourceFileName = System.IO.Path.Combine(sourcePath, file);
+                    string destFileName = System.IO.Path.Combine(installPath, file);
+
+                    // 创建子文件夹
+                    string destPath = destFileName.Substring(0, destFileName.LastIndexOf("\\"));
+                    if (!Directory.Exists(destPath))
+                    {
+                        Directory.CreateDirectory(destPath);
+                    }
+
+                    // 复制文件
+                    if (File.Exists(sourceFileName))
+                    {
+                        File.Copy(sourceFileName, destFileName, true);
+                    }
+                }
+            }
+
+
+            // 3.修复自启动
             string schedulerTaskFullPath = System.IO.Path.Combine(installPath, Const.SchedulerExecuteFileName);
             using (TaskService ts = new TaskService())
             {
@@ -110,14 +113,14 @@ namespace Installer
                 }
             }
 
-            // 3.修复服务
+            // 4.修复服务
             string consoleFullPath = System.IO.Path.Combine(installPath, Const.ConsoleFileName);
             if (File.Exists(consoleFullPath))
             {
                 Process.Start(consoleFullPath, new[] { "install", "start" });
             }
 
-            // 4.修复注册表
+            // 5.修复注册表
             Registry.LocalMachine.OpenSubKey("SOFTWARE", true).CreateSubKey("NINI").SetValue("Path", installPath);
 
             MessageBox.Show("Repair completed.", "Cheers", MessageBoxButton.OK, MessageBoxImage.Information);
