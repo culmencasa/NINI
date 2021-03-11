@@ -36,7 +36,8 @@
             <Button
                 Width="200"
                 Height="30"
-                Click="Button_Click">
+                x:Name="btnInstall"
+                Click="btnInstall_Click">
                 Install
             </Button>
         </StackPanel>

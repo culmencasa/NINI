@@ -49,7 +49,7 @@ namespace Installer
         }
 
         // 点击Install按钮
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void btnInstall_Click(object sender, RoutedEventArgs e)
         {
             string sourcePath = AppDomain.CurrentDomain.BaseDirectory;
 

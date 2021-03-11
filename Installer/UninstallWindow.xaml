@@ -15,12 +15,21 @@
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Image Source="pack://application:,,,/Installer;Component/Resources/icons8-spider-web-48.png" Stretch="None" />
             <TextBlock Height="10" />
-            <TextBlock HorizontalAlignment="Center" Text="Goodbye" />
-            <TextBlock Height="30" />
+            <TextBlock HorizontalAlignment="Center" Text="Program installed." />
+            <TextBlock
+                Height="30" />
             <Button
                 Width="200"
                 Height="30"
-                Click="Button_Click">
+                Click="btnReinstall_Click">
+                Repair
+            </Button>
+            <TextBlock
+                Height="10" />
+            <Button
+                Width="200"
+                Height="30"
+                Click="btnUninstall_Click">
                 Uninstall
             </Button>
         </StackPanel>
