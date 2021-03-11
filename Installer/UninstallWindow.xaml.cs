@@ -120,7 +120,7 @@ namespace Installer
             // 4.修复注册表
             Registry.LocalMachine.OpenSubKey("SOFTWARE", true).CreateSubKey("NINI").SetValue("Path", installPath);
 
-            MessageBox.Show("Repair completed.", "Cheers", MessageBoxButton.OK, MessageBoxImage.Information`);
+            MessageBox.Show("Repair completed.", "Cheers", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         /// <summary>

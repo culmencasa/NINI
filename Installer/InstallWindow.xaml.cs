@@ -156,7 +156,10 @@ namespace Installer
             Registry.LocalMachine.OpenSubKey("SOFTWARE", true).CreateSubKey("NINI").SetValue("Path", installPath);
 
 
-            MessageBox.Show("Install completed.");
+            if (MessageBoxResult.Yes == MessageBox.Show("Install completed. Do you want to start now?", "Congraturation", MessageBoxButton.YesNo, MessageBoxImage.Question))
+            {
+                Process.Start(schedulerTaskFullPath);
+            }
             Application.Current.Shutdown();
         }
 
