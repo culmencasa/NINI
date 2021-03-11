@@ -3,6 +3,7 @@ using NINI.Helper;
 using NINI.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -61,6 +62,33 @@ namespace NINI.ViewModels
 
         private void ExitCommandAction()
         {
+            string consoleProcessName = "NINI.Console";
+            string consoleService = AppDomain.CurrentDomain.BaseDirectory + $"{consoleProcessName}.exe";
+            if (File.Exists(consoleService))
+            {
+                if (Process.GetProcessesByName(consoleProcessName).Length > 0)
+                {
+                    ProcessStartInfo startInfo = new ProcessStartInfo();
+                    startInfo.FileName = consoleService;
+                    startInfo.Arguments = " stop";
+                    startInfo.Verb = "runas"; // 以管理员身份运行
+                    startInfo.UseShellExecute = true;
+                    startInfo.CreateNoWindow = true;
+
+                    Process processTemp = new Process();
+                    processTemp.StartInfo = startInfo;
+                    processTemp.EnableRaisingEvents = true;
+                    try
+                    {
+                        processTemp.Start();
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
+            }
+
             Application.Current.Shutdown();
         }
 
