@@ -1,4 +1,5 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
+using Microsoft.Win32;
 using MVVMLib;
 using NINI.Helper;
 using NINI.Models;
@@ -120,6 +121,7 @@ namespace NINI
             try
             {
                 _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
+                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.R);
             }
             catch
             {
@@ -182,13 +184,25 @@ namespace NINI
 
         private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
-            Process p = new Process();
-            p.StartInfo.UseShellExecute = false;
-            p.StartInfo.Verb = "runas";
-            p.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            p.StartInfo.FileName = "cmd";
-            p.StartInfo.Arguments = "";
-            p.Start();
+            if (e.Key == System.Windows.Forms.Keys.T)
+            {
+                Process p = new Process();
+                p.StartInfo.UseShellExecute = false;
+                p.StartInfo.Verb = "runas";
+                p.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                p.StartInfo.FileName = "cmd";
+                p.StartInfo.Arguments = "";
+                p.Start();
+            }
+            else if (e.Key == System.Windows.Forms.Keys.R)
+            {
+                if (Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop") != null)
+                {
+                    string file = Registry.CurrentUser.OpenSubKey(@"Control Panel\Desktop\").GetValue("SCRNSAVE.EXE").ToString();
+                    Process.Start(file, "/r");
+                }
+
+            }
         }
 
         private void HandleGeneralMessage(GeneralMessage msg)

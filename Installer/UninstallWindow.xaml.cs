@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Shapes;
@@ -247,6 +248,10 @@ namespace Installer
             psi.WindowStyle = ProcessWindowStyle.Hidden;
             psi.CreateNoWindow = true;
             Process.Start(psi);
+
+
+            // 2021-12-20 删除不了的文件可以使用MoveFileEx函数重启后删除
+            //MoveFileEx(f.FullName, null, MoveFileFlags.MOVEFILE_DELAY_UNTIL_REBOOT);
         }
 
         /// <summary>
@@ -270,6 +275,18 @@ namespace Installer
             }
 
             return files;
+        }
+
+
+        [DllImport("kernel32.dll", EntryPoint = "MoveFileEx")]
+        public static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, MoveFileFlags dwFlags);
+
+        public enum MoveFileFlags
+        {
+            MOVEFILE_REPLACE_EXISTING = 1,
+            MOVEFILE_COPY_ALLOWED = 2,
+            MOVEFILE_DELAY_UNTIL_REBOOT = 4,
+            MOVEFILE_WRITE_THROUGH = 8
         }
     }
 }
