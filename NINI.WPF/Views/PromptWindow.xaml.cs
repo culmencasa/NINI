@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Globalization;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Win32;
@@ -14,22 +10,22 @@ namespace NINI.Views
 {
     public partial class PromptWindow : Window
     {
-        private static PromptWindow _instance;
-
-        private Action _onFinished;
-        private bool _isClosing = false; // 防止关闭逻辑被重复触发或冲突
-
-        // 新增：用于统一管理倒计时的变量
-        private System.Windows.Threading.DispatcherTimer _activeTimer;
 
 
-        private System.Windows.Threading.DispatcherTimer _autoCloseTimer;
+        #region 枚举
+
 
         public enum PromptTheme
         {
             Dark,
             Light,
         }
+
+        #endregion
+
+        #region 静态成员
+
+        private static PromptWindow singleton;
 
         /// <summary>
         /// 仅显示单行信息提示 (如: "终端")
@@ -42,269 +38,71 @@ namespace NINI.Views
         /// <summary>
         /// 显示带倒计时的交互操作 (如: "关闭显示器")
         /// </summary>
-        public static void ShowAction(string hotkey, string title, string sub, int ms, Action action)
+        public static void ShowAction(
+            string hotkey,
+            string title,
+            string sub,
+            int ms,
+            Action action
+        )
         {
             // 如果实例存在且没有正在关闭，则复用
-            if (_instance != null && _instance.IsLoaded && !_instance._isClosing)
+            if (singleton != null && singleton.IsLoaded && !singleton._isClosing)
             {
-                _instance.Activate(); // 确保窗口在最前
-                _instance.RunIslandTransform(hotkey, title, sub, ms, action);
+                singleton.Activate(); // 确保窗口在最前
+                singleton.RunIslandTransform(hotkey, title, sub, ms, action);
             }
             else
             {
                 // 如果窗口不存在或正在关闭，创建新窗口
-                _instance = new PromptWindow(hotkey, title, sub, ms, action);
-                _instance.Show();
+                singleton = new PromptWindow(hotkey, title, sub, ms, action);
+                singleton.Show();
             }
         }
-        public PromptWindow(string hotkey, string main, string sub = null, int ms = 0, Action onDone = null)
+
+
+        public static PromptTheme GetSystemTheme()
         {
-            InitializeComponent();
-            _instance = this;
-
-            ApplyTheme(GetSystemTheme());
-            UpdateContent(hotkey, main, sub, ms, onDone);
-
-            this.Loaded += (s, e) =>
+            try
             {
-                UpdateLayoutAndPosition(false); // 初始定位
-
-                // 初始滑入动画
-                var tt = new TranslateTransform(0, 80);
-                RootGrid.RenderTransform = tt;
-                tt.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, TimeSpan.FromMilliseconds(400))
+                using (
+                    var key = Registry.CurrentUser.OpenSubKey(
+                        @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+                    )
+                )
                 {
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-                });
-            };
-        }
-        private void UpdateContent(string hotkey, string title, string sub, int ms, Action action)
-        {
-            _onFinished = action;
-            TxtHotkey.Text = string.IsNullOrEmpty(hotkey) ? " " : hotkey.ToUpper();
-            TxtMain.Text = title;
-            TxtSub.Text = string.IsNullOrEmpty(sub) ? " " : sub;
-            TxtSub.Visibility = string.IsNullOrEmpty(sub) ? Visibility.Hidden : Visibility.Visible;
-            CountdownBar.Visibility = ms > 0 ? Visibility.Visible : Visibility.Hidden;
-            CountdownBar.Value = 0; // 重置进度条
-        }
-
-        public void RunIslandTransform(string hotkey, string title, string sub, int ms, Action action)
-        {
-            _isClosing = false;
-            StopCurrentTimer(); // 立即掐断旧的自动关闭倒计时
-
-            // 阶段 A：旧文字淡出
-            var fadeOut = new DoubleAnimation(0, TimeSpan.FromMilliseconds(150));
-            fadeOut.Completed += (s, e) =>
-            {
-                // 阶段 B：文字消失后，更新数据，开始形状形变
-                UpdateContent(hotkey, title, sub, ms, action);
-                ApplyTheme(GetSystemTheme());
-
-                PerformIslandShapeTransition(() =>
-                {
-                    // 阶段 C：形状变好后，新文字淡入
-                    ContentPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(250)));
-
-                    // 阶段 D：全部就绪，重新开始计时
-                    if (ms > 0) StartTimer(ms);
-                    else AutoClose(2000);
-                });
-            };
-            ContentPanel.BeginAnimation(OpacityProperty, fadeOut);
-        }
-
-        private void PerformIslandShapeTransition(Action onCompleted)
-        {
-            // 1. 测量内容实际需要的尺寸
-            // 注意：MaxWidth 限制了窗口不会无限水平扩张
-            ContentPanel.Measure(new Size(this.MaxWidth, double.PositiveInfinity));
-
-            // 2. 计算目标物理尺寸
-            // 内容宽度 + ContentPanel左右Margin(32*2) + RootGrid左右Margin给阴影留的空间(20*2)
-            double targetW = Math.Max(this.MinWidth, ContentPanel.DesiredSize.Width + 64 + 40);
-            // 内容高度 + ContentPanel上下Margin(16+18) + RootGrid上下Margin(20*2)
-            double targetH = ContentPanel.DesiredSize.Height + 34 + 40;
-
-            // 3. 获取当前显示器的 DPI 缩放比例
-            var source = PresentationSource.FromVisual(this);
-            double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-            double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
-
-            // 4. 调用 Win32 API 获取工作区（避开任务栏）
-            RECT rc = new RECT();
-            SystemParametersInfo(48, 0, ref rc, 0); // 48 = SPI_GETWORKAREA
-
-            // 5. 将物理像素坐标转换为 WPF 逻辑坐标
-            double logicalScreenWidth = (rc.Right - rc.Left) / dpiX;
-            double logicalWorkAreaBottom = rc.Bottom / dpiY;
-
-            // 6. 计算为了保持“底边中心对齐”的目标坐标
-            double targetLeft = (logicalScreenWidth - targetW) / 2;
-            // 减去窗口高度，再减去你想要的底部间距（如 10 像素）
-            double targetTop = logicalWorkAreaBottom - targetH - 10;
-
-            // 7. 设置动画参数
-            var duration = TimeSpan.FromMilliseconds(400);
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-            // 8. 属性锁清理：在对 Width/Height 这种依赖属性重新执行动画前，必须卸载之前的动画层
-            this.BeginAnimation(Window.WidthProperty, null);
-            this.BeginAnimation(Window.HeightProperty, null);
-            this.BeginAnimation(Window.LeftProperty, null);
-            this.BeginAnimation(Window.TopProperty, null);
-
-            // 9. 构建动画对象
-            var widthAnim = new DoubleAnimation(targetW, duration) { EasingFunction = ease };
-            var heightAnim = new DoubleAnimation(targetH, duration) { EasingFunction = ease };
-            var leftAnim = new DoubleAnimation(targetLeft, duration) { EasingFunction = ease };
-            var topAnim = new DoubleAnimation(targetTop, duration) { EasingFunction = ease };
-
-            // 10. 监听动画完成，回调执行“内容淡入”
-            widthAnim.Completed += (s, e) => onCompleted?.Invoke();
-
-            // 11. 四轴联动，启动动画
-            this.BeginAnimation(Window.WidthProperty, widthAnim);
-            this.BeginAnimation(Window.HeightProperty, heightAnim);
-            this.BeginAnimation(Window.LeftProperty, leftAnim);
-            this.BeginAnimation(Window.TopProperty, topAnim);
-        }
-        private void UpdateLayoutAndPosition(bool animate)
-        {
-            // 1. 精确测量文字需要的尺寸
-            ContentPanel.Measure(new Size(this.MaxWidth, double.PositiveInfinity));
-
-            // 2. 计算目标宽度：文字宽度 + ContentPanel的左右Margin(32+32) + RootGrid留给阴影的Margin(20+20)
-            double targetW = Math.Max(this.MinWidth, ContentPanel.DesiredSize.Width + 64 + 40);
-
-            // 3. 计算目标高度：文字高度 + ContentPanel的上下Margin(16+18) + RootGrid留给阴影的Margin(20+20)
-            double targetH = ContentPanel.DesiredSize.Height + 34 + 40;
-
-            var source = PresentationSource.FromVisual(this);
-            double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-            double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
-            RECT rc = new RECT();
-            SystemParametersInfo(48, 0, ref rc, 0);
-
-            double screenW = (rc.Right - rc.Left) / dpiX;
-            double workBottom = rc.Bottom / dpiY;
-
-            // 位置计算保持不变
-            double targetLeft = (screenW - targetW) / 2;
-            double targetTop = workBottom - targetH - 10;
-
-            if (animate)
-            {
-                var duration = TimeSpan.FromMilliseconds(400);
-                var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-                this.BeginAnimation(Window.WidthProperty, null);
-                this.BeginAnimation(Window.HeightProperty, null);
-                this.BeginAnimation(Window.LeftProperty, null);
-                this.BeginAnimation(Window.TopProperty, null);
-
-                this.BeginAnimation(Window.WidthProperty, new DoubleAnimation(targetW, duration) { EasingFunction = ease });
-                this.BeginAnimation(Window.HeightProperty, new DoubleAnimation(targetH, duration) { EasingFunction = ease });
-                this.BeginAnimation(Window.LeftProperty, new DoubleAnimation(targetLeft, duration) { EasingFunction = ease });
-                this.BeginAnimation(Window.TopProperty, new DoubleAnimation(targetTop, duration) { EasingFunction = ease });
+                    if (key != null)
+                    {
+                        // AppsUseLightTheme  1 表示明亮模式 0 表示暗黑模式
+                        object registryValue = key.GetValue("AppsUseLightTheme");
+                        if (registryValue is int i)
+                        {
+                            return i == 1 ? PromptTheme.Light : PromptTheme.Dark;
+                        }
+                    }
+                }
             }
-            else
+            catch
             {
-                this.Width = targetW;
-                this.Height = targetH;
-                this.Left = targetLeft;
-                this.Top = targetTop;
             }
+
+            return PromptTheme.Light;
         }
 
+        #endregion
 
-        private void UpdateState(string hotkey, string main, string sub, int ms, Action onDone)
-        {
-            _onFinished = onDone;
-            TxtHotkey.Text = string.IsNullOrEmpty(hotkey) ? " " : hotkey.ToUpper();
-            TxtMain.Text = main;
-            TxtSub.Text = string.IsNullOrEmpty(sub) ? " " : sub;
-            TxtSub.Visibility = string.IsNullOrEmpty(sub) ? Visibility.Hidden : Visibility.Visible;
-            CountdownBar.Visibility = ms > 0 ? Visibility.Visible : Visibility.Hidden;
-        }
+        #region 字段
 
 
-        // 提取公共的内容设置方法
-        private void SetContent(string hotkey, string title, string sub, int ms, Action action)
-        {
-            _onFinished = action;
-            TxtHotkey.Text = string.IsNullOrEmpty(hotkey) ? " " : hotkey.ToUpper();
-            TxtMain.Text = title;
-            TxtSub.Text = string.IsNullOrEmpty(sub) ? " " : sub;
-            TxtSub.Visibility = string.IsNullOrEmpty(sub) ? Visibility.Hidden : Visibility.Visible;
-            CountdownBar.Visibility = ms > 0 ? Visibility.Visible : Visibility.Hidden;
-        }
+        private Action _onFinished;
+        private bool _isClosing = false; // 防止关闭逻辑被重复触发或冲突
 
+        private System.Windows.Threading.DispatcherTimer _activeTimer;
 
-        private void ApplyIslandTransform()
-        {
-            // 记录旧尺寸
-            double oldWidth = this.ActualWidth;
-            double oldHeight = this.ActualHeight;
+        #endregion
 
-            // 强制测量新尺寸
-            this.Measure(new Size(MaxWidth, double.PositiveInfinity));
-            double newWidth = Math.Max(MinWidth, Math.Min(MaxWidth, this.DesiredSize.Width));
-            double newHeight = this.DesiredSize.Height;
+        #region 构造
 
-            // 尺寸形变动画 (灵动岛效果核心)
-            var widthAnim = new DoubleAnimation(oldWidth, newWidth, TimeSpan.FromMilliseconds(400))
-            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-            var heightAnim = new DoubleAnimation(oldHeight, newHeight, TimeSpan.FromMilliseconds(400))
-            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-
-            this.BeginAnimation(Window.WidthProperty, widthAnim);
-            this.BeginAnimation(Window.HeightProperty, heightAnim);
-
-            // 位置修正动画：确保形变时底部中心对齐
-            UpdatePosition(true, newWidth, newHeight);
-        }
-
-        private void UpdatePosition(bool animate, double targetW = 0, double targetH = 0)
-        {
-            var source = PresentationSource.FromVisual(this);
-            double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-            double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
-
-            RECT rc = new RECT();
-            SystemParametersInfo(48, 0, ref rc, 0);
-
-            double logicalScreenWidth = (rc.Right - rc.Left) / dpiX;
-            double logicalWorkAreaBottom = rc.Bottom / dpiY;
-
-            double winWidth = targetW > 0 ? targetW : this.ActualWidth;
-            double winHeight = targetH > 0 ? targetH : this.ActualHeight;
-
-            double finalLeft = (logicalScreenWidth - winWidth) / 2;
-            double finalTop = logicalWorkAreaBottom - winHeight - 10;
-
-            if (animate)
-            {
-                this.BeginAnimation(Window.LeftProperty, new DoubleAnimation(finalLeft, TimeSpan.FromMilliseconds(400)) { EasingFunction = new CubicEase() });
-                this.BeginAnimation(Window.TopProperty, new DoubleAnimation(finalTop, TimeSpan.FromMilliseconds(400)) { EasingFunction = new CubicEase() });
-            }
-            else
-            {
-                this.Left = finalLeft;
-                this.Top = finalTop;
-            }
-        }
-
-        private void ResetTimer(int ms)
-        {
-            _autoCloseTimer?.Stop();
-            if (ms > 0) StartTimer(ms);
-            else AutoClose(2000);
-        }
-        
-
-        /*
         public PromptWindow(
             string hotkey,
             string main,
@@ -314,87 +112,171 @@ namespace NINI.Views
         )
         {
             InitializeComponent();
+            singleton = this;
 
-            _onFinished = onDone;
-
-            // 1. 设置内容
-            TxtHotkey.Text = string.IsNullOrEmpty(hotkey) ? " " : hotkey.ToUpper();
-            TxtMain.Text = main;
-
-            // 2. 占位逻辑：使用 Hidden 保留空间，文本设为空格防止高度塌陷 
-            if (!string.IsNullOrEmpty(sub))
-            {
-                TxtSub.Text = sub;
-                TxtSub.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                TxtSub.Text = " ";
-                TxtSub.Visibility = Visibility.Hidden; // 绝对不能用 Collapsed
-            }
-
-            // 进度条
-            CountdownBar.Visibility = ms > 0 ? Visibility.Visible : Visibility.Hidden;
-
-            // 3. 应用主题
-            var theme = GetSystemTheme();
-            ApplyTheme(theme);
+            ApplyTheme(GetSystemTheme());
+            UpdateContent(hotkey, main, sub, ms, onDone);
 
             this.Loaded += (s, e) =>
             {
-                // 强制刷新布局，获取真实尺寸
-                this.UpdateLayout();
+                SetupStage();
 
-                double winHeight = this.ActualHeight > 0 ? this.ActualHeight : 80;
-                double winWidth = this.ActualWidth > 0 ? this.ActualWidth : 300;
+                // 计算并直接设置初始尺寸，不带动画，防止第一次弹出时过小
+                SyncIslandSizeStatic();
 
-                // 1. 获取 WPF 针对当前屏幕的 DPI 缩放矩阵
-                var source = PresentationSource.FromVisual(this);
-                double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-                double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
-
-                // 2. 调用最底层的 Win32 API 获取真实的工作区边界（SPI_GETWORKAREA = 48）
-                RECT rc = new RECT();
-                SystemParametersInfo(48, 0, ref rc, 0);
-
-                // 3. 将物理坐标 / DPI，转换为 WPF 永远不会算错的逻辑坐标 
-                double logicalScreenWidth = (rc.Right - rc.Left) / dpiX;
-                double logicalWorkAreaBottom = rc.Bottom / dpiY;
-
-                // 4. 完美定位：直接将物理窗口固定在【最终位置】
-                this.Left = (logicalScreenWidth - winWidth) / 2;
-                double finalTop = logicalWorkAreaBottom - winHeight - 10;
-
-                this.Top = finalTop; // <--- 关键修正：必须设定为 finalTop
-                this.Visibility = Visibility.Visible;
-
-                // 5. 利用 RenderTransform 移动内部的 RootGrid 元素
-                // 此时物理窗体已经在屏幕内了，我们把内部的 Grid 向下推移 winHeight 的距离
-                // 因为超出了物理窗体的边界，WPF 会自动把 Grid 裁剪掉（看不见）
-                var transform = new TranslateTransform { Y = winHeight };
-                RootGrid.RenderTransform = transform;
-
-                // 6. 执行内部滑入动画：让 Grid 从底部慢慢“升”回 0 的位置
-                var slideInAnim = new DoubleAnimation
-                {
-                    From = winHeight,
-                    To = 0,
-                    Duration = TimeSpan.FromMilliseconds(350),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-                };
-
-                transform.BeginAnimation(TranslateTransform.YProperty, slideInAnim);
+                // 执行底部滑入动画
+                var tt = new TranslateTransform(0, 150);
+                IslandContainer.RenderTransform = tt;
+                tt.BeginAnimation(
+                    TranslateTransform.YProperty,
+                    new DoubleAnimation(0, TimeSpan.FromMilliseconds(500))
+                    {
+                        EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                    }
+                );
 
                 if (ms > 0)
                     StartTimer(ms);
                 else
                     AutoClose(2000);
             };
+        }
+
+        #endregion
 
 
-        }*/
+        /// <summary>
+        /// 首次显示时计算尺寸
+        /// </summary>
+        private void SyncIslandSizeStatic()
+        {
+            MainContentGrid.Measure(new Size(800, double.PositiveInfinity));
 
+            // 直接使用它测出的尺寸，Math.Max 确保最小宽度为 160
+            double targetW = Math.Max(160, MainContentGrid.DesiredSize.Width);
+            double targetH = MainContentGrid.DesiredSize.Height;
 
+            // 直接赋值，不走 BeginAnimation
+            IslandContainer.Width = targetW;
+            IslandContainer.Height = targetH;
+        }
+
+        /// <summary>
+        /// 根据DPI初始化窗体尺寸及位置（仅实现底部居中）
+        /// </summary>
+        private void SetupStage()
+        {
+            var source = PresentationSource.FromVisual(this);
+            double dpiX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+            double dpiY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+            RECT rc = new RECT();
+            SystemParametersInfo(48, 0, ref rc, 0);
+
+            double logicalScreenWidth = (rc.Right - rc.Left) / dpiX;
+            double logicalWorkAreaBottom = rc.Bottom / dpiY;
+
+            this.Width = 800;
+            this.Height = 300;
+            this.Left = (logicalScreenWidth - Width) / 2;
+            this.Top = logicalWorkAreaBottom - Height;
+        }
+
+        private void UpdateContent(string hotkey, string title, string sub, int ms, Action action)
+        {
+            _onFinished = action;
+            TxtHotkey.Text = string.IsNullOrEmpty(hotkey) ? " " : hotkey.ToUpper();
+            TxtMain.Text = title;
+            TxtSub.Text = string.IsNullOrEmpty(sub) ? " " : sub;
+            TxtSub.Visibility = string.IsNullOrEmpty(sub) ? Visibility.Hidden : Visibility.Visible;
+
+            if (sub == "本地IPv4地址")
+            {
+                ContentPanel.Visibility = Visibility.Collapsed;
+                HorizontalPanel.Visibility = Visibility.Visible;
+
+                CountdownBar.Visibility = Visibility.Hidden;
+                CountdownBar.Value = 0;
+            }
+            else
+            {
+                ContentPanel.Visibility = Visibility.Visible;
+                HorizontalPanel.Visibility = Visibility.Collapsed;
+
+                CountdownBar.Visibility = ms > 0 ? Visibility.Visible : Visibility.Hidden;
+                CountdownBar.Value = 0; // 重置进度条
+            }
+        }
+
+        /// <summary>
+        /// 播放滑入动画
+        /// </summary>
+        /// <param name="hotkey"></param>
+        /// <param name="title"></param>
+        /// <param name="sub"></param>
+        /// <param name="ms"></param>
+        /// <param name="action"></param>
+        public void RunIslandTransform(
+            string hotkey,
+            string title,
+            string sub,
+            int ms,
+            Action action
+        )
+        {
+            _isClosing = false;
+            StopCurrentTimer();
+
+            var fadeOut = new DoubleAnimation(0, TimeSpan.FromMilliseconds(80));
+            fadeOut.Completed += (s, e) =>
+            {
+                UpdateContent(hotkey, title, sub, ms, action);
+                ApplyTheme(GetSystemTheme());
+
+                PerformIslandShapeTransition(() =>
+                {
+                    MainContentGrid.BeginAnimation(
+                        OpacityProperty,
+                        new DoubleAnimation(1, TimeSpan.FromMilliseconds(150))
+                    );
+
+                    if (ms > 0)
+                        StartTimer(ms);
+                    else
+                        AutoClose(2000);
+                });
+            };
+            MainContentGrid.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        /// <summary>
+        /// 播放形变动画
+        /// </summary>
+        /// <param name="onCompleted"></param>
+        private void PerformIslandShapeTransition(Action onCompleted)
+        {
+            MainContentGrid.Measure(new Size(800, double.PositiveInfinity));
+            double targetW = Math.Max(160, MainContentGrid.DesiredSize.Width);
+            double targetH = MainContentGrid.DesiredSize.Height;
+
+            var duration = TimeSpan.FromMilliseconds(150);
+            var ease = new QuarticEase { EasingMode = EasingMode.EaseOut };
+
+            // 停止旧动画
+            IslandContainer.BeginAnimation(WidthProperty, null);
+            IslandContainer.BeginAnimation(HeightProperty, null);
+
+            // 显式同步：将当前的 Actual 值赋给 Width 属性，作为动画起点
+            IslandContainer.Width = IslandContainer.ActualWidth;
+            IslandContainer.Height = IslandContainer.ActualHeight;
+
+            var widthAnim = new DoubleAnimation(targetW, duration) { EasingFunction = ease };
+            var heightAnim = new DoubleAnimation(targetH, duration) { EasingFunction = ease };
+
+            widthAnim.Completed += (s, e) => onCompleted?.Invoke();
+
+            IslandContainer.BeginAnimation(WidthProperty, widthAnim);
+            IslandContainer.BeginAnimation(HeightProperty, heightAnim);
+        }
 
         private void ApplyTheme(PromptTheme theme)
         {
@@ -448,15 +330,21 @@ namespace NINI.Views
         {
             if (e.Key == Key.Escape)
             {
+                // 1. 立刻掐断计时器，这是最关键的！防止后台继续读秒并触发关屏
+                StopCurrentTimer();
+
+                // 2. 清空即将执行的回调（上个双保险）
+                _onFinished = null;
+
+                // 3. 执行丝滑退场并销毁窗体
                 FadeOutAndClose();
+
                 e.Handled = true;
             }
         }
 
-
         #region 计时关闭
 
-        // 核心：每次重新计时前，必须先停掉旧的计时器
         private void StopCurrentTimer()
         {
             if (_activeTimer != null)
@@ -466,14 +354,13 @@ namespace NINI.Views
             }
         }
 
-        // 替换原来的 StartTimer
         private void StartTimer(int ms)
         {
-            StopCurrentTimer(); // 掐断旧计时
+            StopCurrentTimer();
 
             _activeTimer = new System.Windows.Threading.DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(15)
+                Interval = TimeSpan.FromMilliseconds(15),
             };
 
             int elapsed = 0;
@@ -484,7 +371,7 @@ namespace NINI.Views
 
                 if (elapsed >= ms)
                 {
-                    StopCurrentTimer(); // 计时结束，清理自身
+                    StopCurrentTimer();
                     _onFinished?.Invoke();
                     FadeOutAndClose();
                 }
@@ -493,90 +380,85 @@ namespace NINI.Views
             _activeTimer.Start();
         }
 
-        // 替换原来的 AutoClose
+
         private void AutoClose(int ms)
         {
-            StopCurrentTimer(); // 掐断旧计时
+            StopCurrentTimer(); 
 
             _activeTimer = new System.Windows.Threading.DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(ms)
+                Interval = TimeSpan.FromMilliseconds(ms),
             };
 
             _activeTimer.Tick += (s, e) =>
             {
-                StopCurrentTimer(); // 计时结束，清理自身
+                StopCurrentTimer(); 
                 FadeOutAndClose();
             };
 
             _activeTimer.Start();
         }
 
-
         #endregion
 
 
+
+        /// <summary>
+        /// 播放关闭动画
+        /// </summary>
         private void FadeOutAndClose()
         {
-            if (_isClosing) return;
+            if (_isClosing)
+                return;
             _isClosing = true;
 
-            var slideOutAnim = new DoubleAnimation
+            var fadeOutAnim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
+            var slideDownAnim = new DoubleAnimation(150, TimeSpan.FromMilliseconds(250))
             {
-                To = this.ActualHeight,
-                Duration = TimeSpan.FromMilliseconds(300),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
             };
 
-            slideOutAnim.Completed += (s, e) => {
-                _instance = null; // 彻底清除引用
+            slideDownAnim.Completed += (s, e) =>
+            {
+                singleton = null; // 清理唯一实例
                 this.Close();
             };
 
-            if (RootGrid.RenderTransform is TranslateTransform tt)
-                tt.BeginAnimation(TranslateTransform.YProperty, slideOutAnim);
+            // 执行退出动画
+            IslandContainer.BeginAnimation(OpacityProperty, fadeOutAnim);
+
+            if (IslandContainer.RenderTransform is TranslateTransform tt)
+            {
+                tt.BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
+            }
             else
+            {
+                singleton = null;
                 this.Close();
+            }
         }
 
 
-        public static PromptTheme GetSystemTheme()
-        {
-            try
-            {
-                using (
-                    var key = Registry.CurrentUser.OpenSubKey(
-                        @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
-                    )
-                )
-                {
-                    if (key != null)
-                    {
-                        // AppsUseLightTheme = 1 表示明亮模式，0 表示暗黑模式
-                        object registryValue = key.GetValue("AppsUseLightTheme");
-                        if (registryValue is int i)
-                        {
-                            return i == 1 ? PromptTheme.Light : PromptTheme.Dark;
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // 出现异常（如权限问题）时跳过
-            }
-
-            // 如果系统不支持（如旧版 Windows 7/8）或读取失败，默认返回明亮模式
-            return PromptTheme.Light;
-        }
-
+        #region 使用API获取屏幕尺寸
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct RECT { public int Left, Top, Right, Bottom; }
+        public struct RECT
+        {
+            public int Left,
+                Top,
+                Right,
+                Bottom;
+        }
 
         [DllImport("user32.dll")]
-        public static extern bool SystemParametersInfo(int nAction, int nParam, ref RECT rc, int nUpdate);
+        public static extern bool SystemParametersInfo(
+            int nAction,
+            int nParam,
+            ref RECT rc,
+            int nUpdate
+        );
 
 
+        #endregion
     }
 }
