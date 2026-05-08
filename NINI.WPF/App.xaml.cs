@@ -4,13 +4,17 @@ using MVVMLib;
 using NINI.Helper;
 using NINI.Models;
 using NINI.ViewModels;
+using NINI.Views;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace NINI
@@ -20,6 +24,7 @@ namespace NINI
     /// </summary>
     public partial class App : Application
     {
+
         #region Application成员
 
         public App()
@@ -78,9 +83,9 @@ namespace NINI
             _notifyIcon = (TaskbarIcon)FindResource("MyNotifyIcon");
 
 
-            //Start HttpServer
-            HttpServer = new SimpleHttpServer(AppDomain.CurrentDomain.BaseDirectory + "\\TodoWeb","127.0.0.1", 13554);
-            HttpServer.Start();
+            //Start HttpServer - 注释：TodoWeb 目录不存在，暂时禁用
+            // HttpServer = new SimpleHttpServer(AppDomain.CurrentDomain.BaseDirectory + "\\TodoWeb","127.0.0.1", 13554);
+            // HttpServer.Start();
 
 
             SimpleMessenger.Default.Subscribe<GeneralMessage>(this, HandleGeneralMessage);
@@ -122,12 +127,25 @@ namespace NINI
             {
                 _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
                 _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.R);
+                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.P);
+                System.Diagnostics.Debug.WriteLine("Ctrl+Alt+T 和 Ctrl+Alt+R 注册成功");
             }
-            catch
+            catch (Exception ex)
             {
-                _notifyIcon?.ShowBalloonTip(DateTime.Now.ToShortTimeString(), "快捷键注册失败", BalloonIcon.Info);
+                System.Diagnostics.Debug.WriteLine($"Ctrl+Alt+T/R 注册失败: {ex.Message}");
+                _notifyIcon?.ShowBalloonTip("快捷键注册失败(Ctrl+Alt+T/R)", ex.Message, BalloonIcon.Warning);
             }
 
+            try
+            {
+                _hook.RegisterHotKey(ModifierKeys.Control, System.Windows.Forms.Keys.F12);
+                System.Diagnostics.Debug.WriteLine("Ctrl+F12 注册成功");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ctrl+F12 注册失败: {ex.Message}");
+                _notifyIcon?.ShowBalloonTip("快捷键注册失败(Ctrl+F12)", ex.Message, BalloonIcon.Warning);
+            } 
         }
 
         /// <summary>
@@ -182,10 +200,15 @@ namespace NINI
 
         #region 事件处理
 
-        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        private async void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"热键按下: {e.Modifier}+{e.Key}");
             if (e.Key == System.Windows.Forms.Keys.T)
             {
+                PromptWindow.ShowInfo("CTRL+ALT+T", "终端"); // 默认无副标题，无滚动条
+
+
+
                 Process p = new Process();
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.Verb = "runas";
@@ -203,6 +226,29 @@ namespace NINI
                 }
 
             }
+            else if (e.Key == System.Windows.Forms.Keys.P)
+            {
+                var netInfo = NotifyIconViewModel.GetLocalIPString();
+
+                //PromptWindow.ShowInfo("CTRL+ALT+P", $"{netInfo.IP}{Environment.NewLine}{netInfo.Gateway}");
+
+                PromptWindow.ShowAction("CTRL+ALT+P", $"{netInfo.IP}", $"本地IPv4地址", 5000, () =>
+                {
+                });
+            }
+            else if (e.Key == System.Windows.Forms.Keys.F12)
+            {
+                // 必须在 UI 线程打开窗口
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+
+                    PromptWindow.ShowAction("CTRL+F12", "关闭显示器", "按 ESC 取消", 3000, () =>
+                    {
+                        // 执行 P/Invoke 关闭
+                        MonitorController.TurnOff();
+                    });
+                });
+            } 
         }
 
         private void HandleGeneralMessage(GeneralMessage msg)

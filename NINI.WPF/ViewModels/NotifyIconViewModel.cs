@@ -22,7 +22,9 @@ namespace NINI.ViewModels
         {
             //todo:加上外网IP
 
-            ToolTipText = GetLocalIPString();
+
+            var netInfo = GetLocalIPString();
+            ToolTipText = $"IPv4地址: {netInfo.IP} \r\n 网关地址: {netInfo.Gateway}";
             NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(NetworkChange_NetworkAddressChanged);
 
             SyncTimeCommand = new RelayCommand(SyncTimeCommandAction);
@@ -80,9 +82,20 @@ namespace NINI.ViewModels
         [STAThread]
         private void RunDialogAction()
         {
+            // 注释: 原代码使用 Shell32 COM 组件，因.NET 6 不支持 COM 引用而修改
             // Microsoft Shell Controls and Automation
-            Shell32.Shell shell = new Shell32.Shell();
-            shell.FileRun();
+            // Shell32.Shell shell = new Shell32.Shell();
+            // shell.FileRun();
+            
+            // 使用 Win32 API 打开运行对话框
+            try
+            {
+                System.Diagnostics.Process.Start("rundll32.exe", "shell32.dll,#61");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"打开运行对话框失败：{ex.Message}");
+            }
         }
 
         private void ThisComputerAction()
@@ -151,8 +164,9 @@ namespace NINI.ViewModels
                 var state = NetworkChecker.IsNetworkAvailable();
                 if (state)
                 {
-                    ToolTipText = GetLocalIPString();
-                }
+                    var netInfo = GetLocalIPString();
+                    ToolTipText = $"IPv4地址: {netInfo.IP} \r\n 网关地址: {netInfo.Gateway}";
+            }
                 else
                 {
                     ToolTipText = "网络状态丢失";
@@ -200,12 +214,13 @@ namespace NINI.ViewModels
         #region Public Methods
 
         /// <summary>
-        /// 获取IP地址
+        /// 获取本地IP和网关信息
         /// </summary>
         /// <returns></returns>
-        public static string GetLocalIPString()
+        public static (string IP, string Gateway) GetLocalIPString()
         {
             string ipString = "";
+            string gatewayString = "";
             try
             {
                 using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
@@ -215,14 +230,42 @@ namespace NINI.ViewModels
 
                     ipString = endPoint.Address.ToString();
                 }
+
+                // 获取IPv4网关地址
+                foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+                {
+                    if (ni.OperationalStatus == OperationalStatus.Up &&
+                        ni.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+                    {
+                        var ipProps = ni.GetIPProperties();
+                        var gatewayAddresses = ipProps.GatewayAddresses;
+                        foreach (var gateway in gatewayAddresses)
+                        {
+                            // 只获取IPv4网关
+                            if (gateway.Address.AddressFamily == AddressFamily.InterNetwork)
+                            {
+                                gatewayString = gateway.Address.ToString();
+                                break;
+                            }
+                        }
+                        if (!string.IsNullOrEmpty(gatewayString))
+                            break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(gatewayString))
+                {
+                    gatewayString = "未知";
+                }
             }
             catch (Exception ex)
             {
                 ipString = "No IP Address";
+                gatewayString = "未知";
                 EZLogger.Default.Error(ex.StackTrace);
             }
 
-            return ipString;
+            return (ipString, gatewayString);
         }
 
         #endregion
