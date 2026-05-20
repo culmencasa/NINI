@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:NINI"
     xmlns:viewmodels="clr-namespace:NINI.ViewModels"
+    xmlns:views="clr-namespace:NINI.Views"
     ShutdownMode="OnExplicitShutdown" >
     <Application.Resources>
 
@@ -14,6 +15,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <viewmodels:ViewModelLocator x:Key="Locator" />
+            <views:GreaterThanZeroToVisibility x:Key="GreaterThanZeroToVisibility"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

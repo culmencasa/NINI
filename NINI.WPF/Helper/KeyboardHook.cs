@@ -14,8 +14,8 @@ namespace NINI.Helper
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
 
-        [DllImport("user32.dll")]
-        private static extern bool UnregisterHotKey(IntPtr hWnd, int id);
+        [DllImport("user32.dll", EntryPoint = "UnregisterHotKey")]
+        private static extern bool NativeUnregisterHotKey(IntPtr hWnd, int id);
 
         private class Window : NativeWindow, IDisposable
         {
@@ -70,14 +70,26 @@ namespace NINI.Helper
         /// </summary>
         /// <param name="modifier">The modifiers that are associated with the hot key.</param>
         /// <param name="key">The key itself that is associated with the hot key.</param>
-        public void RegisterHotKey(ModifierKeys modifier, Keys key)
+        /// <returns>注册ID，失败抛出异常</returns>
+        public int RegisterHotKey(ModifierKeys modifier, Keys key)
         {
             // increment the counter.
             _currentId = _currentId + 1;
 
             // register the hot key.
             if (!RegisterHotKey(_window.Handle, _currentId, (uint)modifier, (uint)key))
-                throw new InvalidOperationException("Couldn’t register the hot key.");
+                throw new InvalidOperationException("Couldn't register the hot key.");
+
+            return _currentId;
+        }
+
+        /// <summary>
+        /// Unregisters a specific hot key by ID.
+        /// </summary>
+        /// <param name="id">The ID returned by RegisterHotKey</param>
+        public void UnregisterHotKey(int id)
+        {
+            NativeUnregisterHotKey(_window.Handle, id);
         }
 
         /// <summary>
@@ -92,7 +104,7 @@ namespace NINI.Helper
             // unregister all the registered hot keys.
             for (int i = _currentId; i > 0; i--)
             {
-                UnregisterHotKey(_window.Handle, i);
+                NativeUnregisterHotKey(_window.Handle, i);
             }
 
             // dispose the inner native window.

@@ -1,6 +1,7 @@
 ﻿using MVVMLib;
 using NINI.Helper;
 using NINI.Models;
+using NINI.Views;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,6 +34,7 @@ namespace NINI.ViewModels
             ThisComputerCommand = new RelayCommand(ThisComputerAction);
             RunDialogCommand = new RelayCommand(RunDialogAction);
             ShutDownPCCommand = new RelayCommand(ShutDownPCAction);
+            OpenSettingsCommand = new RelayCommand(OpenSettingsAction);
             //SimpleMessenger.Default.Subscribe<NotifyIconViewMessage>(this, HandleMainViewMessage);
         }
 
@@ -113,6 +115,19 @@ namespace NINI.ViewModels
             if (File.Exists(fileName) && File.Exists(argument))
             {
                 System.Diagnostics.Process.Start(fileName, argument);
+            }
+        }
+
+        private void OpenSettingsAction()
+        {
+            var service = App.GetHotkeyService();
+            if (service != null)
+            {
+                var settingsWindow = new NINI.Views.Settings.SettingsWindow2();
+                settingsWindow.Show();
+                //var viewModel = new SettingsViewModel(service);
+                //var window = new SettingsWindow(viewModel);
+                //window.ShowDialog();
             }
         }
 
@@ -208,6 +223,8 @@ namespace NINI.ViewModels
         public ICommand RunDialogCommand { get; set; }
 
         public ICommand ShutDownPCCommand { get; set; }
+
+        public ICommand OpenSettingsCommand { get; private set; }
 
         #endregion
 

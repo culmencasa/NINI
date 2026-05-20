@@ -194,6 +194,11 @@ namespace NINI.Views
                 ContentPanel.Visibility = Visibility.Collapsed;
                 HorizontalPanel.Visibility = Visibility.Visible;
 
+                // 获取真实 IP 和网关
+                var netInfo = ViewModels.NotifyIconViewModel.GetLocalIPString();
+                TxtLocalIp.Text = string.IsNullOrEmpty(netInfo.IP) ? "未检测到" : netInfo.IP;
+                TxtGateway.Text = string.IsNullOrEmpty(netInfo.Gateway) ? "未检测到" : netInfo.Gateway;
+
                 CountdownBar.Visibility = Visibility.Hidden;
                 CountdownBar.Value = 0;
             }
@@ -415,27 +420,20 @@ namespace NINI.Views
             var fadeOutAnim = new DoubleAnimation(0, TimeSpan.FromMilliseconds(200));
             var slideDownAnim = new DoubleAnimation(150, TimeSpan.FromMilliseconds(250))
             {
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+                EasingFunction = new CubicEase 
+                { 
+                    EasingMode = EasingMode.EaseIn
+                }
             };
-
             slideDownAnim.Completed += (s, e) =>
             {
                 singleton = null; // 清理唯一实例
                 this.Close();
             };
 
-            // 执行退出动画
-            IslandContainer.BeginAnimation(OpacityProperty, fadeOutAnim);
 
-            if (IslandContainer.RenderTransform is TranslateTransform tt)
-            {
-                tt.BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
-            }
-            else
-            {
-                singleton = null;
-                this.Close();
-            }
+            IslandContainer.BeginAnimation(OpacityProperty, fadeOutAnim);
+            ((TranslateTransform)IslandContainer.RenderTransform).BeginAnimation(TranslateTransform.YProperty, slideDownAnim);
         }
 
 

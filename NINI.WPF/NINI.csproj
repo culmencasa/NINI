@@ -4,7 +4,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest> 
     <Platforms>AnyCPU;x64</Platforms>
     <Authors />
     <Product />
@@ -47,6 +48,7 @@
     <PackageReference Include="gong-wpf-dragdrop" Version="2.3.2" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf.NetCore" Version="1.0.10" />
     <PackageReference Include="LiteDB" Version="5.0.21" />
+    <PackageReference Include="WPF-UI" Version="3.0.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,6 +65,13 @@
 
   <ItemGroup>
     <None Update="Resources\shutdown.vbs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- SimpleTopMostHook DLL - 窗口置顶功能 -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\SimpleTopMostHook.dll')">
+    <None Include="SimpleTopMostHook.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

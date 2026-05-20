@@ -6,6 +6,7 @@ using NINI.Models;
 using NINI.ViewModels;
 using NINI.Views;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -122,30 +123,48 @@ namespace NINI
 
 
 
-            _hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-            try
+            // 初始化热键服务
+            _hotkeyService = new HotkeyService();
+            _hotkeyService.LoadSettings();
+            _hotkeyService.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+
+            // 注册所有热键
+            var conflicted = _hotkeyService.RegisterAll();
+            if (conflicted.Count > 0)
             {
-                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.T);
-                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.R);
-                _hook.RegisterHotKey(ModifierKeys.Control | ModifierKeys.Alt, System.Windows.Forms.Keys.P);
-                System.Diagnostics.Debug.WriteLine("Ctrl+Alt+T 和 Ctrl+Alt+R 注册成功");
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Ctrl+Alt+T/R 注册失败: {ex.Message}");
-                _notifyIcon?.ShowBalloonTip("快捷键注册失败(Ctrl+Alt+T/R)", ex.Message, BalloonIcon.Warning);
+                var names = string.Join(", ", conflicted.ConvertAll(h => h.Name));
+                _notifyIcon?.ShowBalloonTip(
+                    "快捷键冲突",
+                    $"以下快捷键可能与其他程序冲突: {names}",
+                    BalloonIcon.Warning
+                );
             }
 
+            // 安装全局窗口置顶钩子
             try
             {
-                _hook.RegisterHotKey(ModifierKeys.Control, System.Windows.Forms.Keys.F12);
-                System.Diagnostics.Debug.WriteLine("Ctrl+F12 注册成功");
+                _hookManager = new GlobalHookManager();
+                _hookManager.Install();
+                Debug.WriteLine("[App] Global hook installed successfully");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ctrl+F12 注册失败: {ex.Message}");
-                _notifyIcon?.ShowBalloonTip("快捷键注册失败(Ctrl+F12)", ex.Message, BalloonIcon.Warning);
-            } 
+                Debug.WriteLine($"[App] Failed to install global hook: {ex.Message}");
+                // 可选：显示托盘通知
+                _notifyIcon?.ShowBalloonTip(
+                    "钩子安装失败",
+                    $"窗口置顶功能不可用: {ex.Message}",
+                    BalloonIcon.Error
+                );
+            }
+        }
+
+        /// <summary>
+        /// 获取热键服务实例
+        /// </summary>
+        public static HotkeyService? GetHotkeyService()
+        {
+            return Instance?._hotkeyService;
         }
 
         /// <summary>
@@ -158,6 +177,12 @@ namespace NINI
 
             SimpleMessenger.Default.Unsubscribe(this);
             _notifyIcon?.Dispose();
+            _hotkeyService?.Dispose();
+
+            // 卸载全局钩子
+            _hookManager?.Uninstall();
+            _hookManager?.Dispose();
+
             base.OnExit(e);
 
 
@@ -185,7 +210,8 @@ namespace NINI
 
         private TaskbarIcon _notifyIcon;
         private Process _todoProcess;
-        private KeyboardHook _hook = new KeyboardHook();
+        private HotkeyService _hotkeyService;
+        private GlobalHookManager _hookManager;
 
         #endregion
 

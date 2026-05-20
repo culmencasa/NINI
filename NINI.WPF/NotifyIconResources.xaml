@@ -31,6 +31,12 @@
 
                 <Separator />
 
+                <MenuItem Command="{Binding OpenSettingsCommand}" Header="设置(_S)">
+
+                </MenuItem>
+
+                <Separator />
+
                 <MenuItem Command="{Binding RunDialogCommand}" Header="运行(_R)">
 
                 </MenuItem>
