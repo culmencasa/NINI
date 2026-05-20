@@ -143,7 +143,7 @@ namespace NINI
             // 安装全局窗口置顶钩子
             try
             {
-                _hookManager = new GlobalHookManager();
+                _hookManager = new SystemMenuService();
                 _hookManager.Install();
                 Debug.WriteLine("[App] Global hook installed successfully");
             }
@@ -211,7 +211,7 @@ namespace NINI
         private TaskbarIcon _notifyIcon;
         private Process _todoProcess;
         private HotkeyService _hotkeyService;
-        private GlobalHookManager _hookManager;
+        private SystemMenuService _hookManager;
 
         #endregion
 

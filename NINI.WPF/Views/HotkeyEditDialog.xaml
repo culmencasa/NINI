@@ -1,0 +1,104 @@
+<ui:FluentWindow
+    x:Class="NINI.Views.HotkeyEditDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="编辑快捷键"
+    Width="400"
+    Height="280"
+    WindowStartupLocation="CenterOwner"
+    ResizeMode="NoResize"
+    ExtendsContentIntoTitleBar="True"
+    WindowBackdropType="Mica"
+    ShowInTaskbar="False">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 标题栏 -->
+        <ui:TitleBar Grid.Row="0" 
+                     Title="编辑快捷键"
+                     ShowMaximize="False"
+                     CanMaximize="False"/>
+
+        <!-- 内容 -->
+        <StackPanel Grid.Row="1" Margin="24">
+            <!-- 热键名称 -->
+            <TextBlock x:Name="HotkeyName" 
+                       FontSize="18" 
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,16"/>
+
+            <!-- 当前快捷键 -->
+            <TextBlock Text="当前快捷键" 
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="12"
+                       Margin="0,0,0,8"/>
+            <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    CornerRadius="6"
+                    Padding="16,12"
+                    Margin="0,0,0,16">
+                <TextBlock x:Name="CurrentHotkeyText" 
+                           FontSize="20" 
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+            </Border>
+
+            <!-- 新快捷键输入 -->
+            <TextBlock Text="请按新的快捷键组合" 
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="12"
+                       Margin="0,0,0,8"/>
+            <Border x:Name="HotkeyInputBorder"
+                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="2"
+                    CornerRadius="6"
+                    Padding="16,12"
+                    Focusable="True"
+                    PreviewKeyDown="HotkeyInput_PreviewKeyDown"
+                    GotFocus="HotkeyInput_GotFocus"
+                    LostFocus="HotkeyInput_LostFocus">
+                <TextBlock x:Name="NewHotkeyText" 
+                           FontSize="16" 
+                           HorizontalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                    <Run Text="点击此处并按下快捷键..."/>
+                </TextBlock>
+            </Border>
+
+            <!-- 冲突提示 -->
+            <TextBlock x:Name="ConflictWarning"
+                       Text="⚠️ 此快捷键可能与其他程序冲突"
+                       Foreground="#FF6A6A"
+                       FontSize="12"
+                       HorizontalAlignment="Center"
+                       Margin="0,8,0,0"
+                       Visibility="Collapsed"/>
+        </StackPanel>
+
+        <!-- 底部按钮 -->
+        <Border Grid.Row="2" 
+                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                Padding="16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <ui:Button Content="重置" 
+                           Appearance="Secondary"
+                           Margin="0,0,12,0"
+                           Click="Reset_Click"/>
+                <ui:Button Content="取消" 
+                           Appearance="Secondary"
+                           Margin="0,0,12,0"
+                           Click="Cancel_Click"/>
+                <ui:Button Content="确定" 
+                           Appearance="Primary"
+                           Click="OK_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

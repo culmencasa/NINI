@@ -70,10 +70,5 @@
   </ItemGroup>
 
   <!-- SimpleTopMostHook DLL - 窗口置顶功能 -->
-  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\SimpleTopMostHook.dll')">
-    <None Include="SimpleTopMostHook.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 
 </Project>
