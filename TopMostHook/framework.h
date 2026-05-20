@@ -15,7 +15,7 @@
 
 extern "C" {
     // 安装全局钩子：传入主程序的模块句柄
-    HOOK_API BOOL InstallHook();
+    HOOK_API BOOL InstallMenuToolsHook();
     // 卸载全局钩子
-    HOOK_API void UninstallHook();
+    HOOK_API void UninstallMenuToolsHook();
 }
