@@ -69,6 +69,11 @@
     </None>
   </ItemGroup>
 
-  <!-- SimpleTopMostHook DLL - 窗口置顶功能 -->
+  <!-- TopMostHook DLL - 纯C实现，零依赖 -->
+  <ItemGroup>
+    <None Include="..\x64\$(Configuration)\TopMostHook.dll" Condition="Exists('..\x64\$(Configuration)\TopMostHook.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
